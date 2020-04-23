@@ -300,3 +300,4 @@ void GameScene::draw(sf::RenderTarget& target)
     target.draw(m_layers["playerLayer"]);
     target.draw(m_layers["fireballsLayers"]);
 }
+
