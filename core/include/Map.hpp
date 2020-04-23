@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-class Map : public sf::Drawable, sf::Transformable
+class Map : public sf::Drawable
 {
 public:
 	Map(const sf::Texture* texture);
@@ -32,4 +32,3 @@ private:
 	sf::VertexArray m_vertices;
 	std::vector< std::vector<TileType> > m_grid;
 };
-

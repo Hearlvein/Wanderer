@@ -26,32 +26,38 @@ void Map::load(const std::string& filename)
 		m_grid[i].resize(GRID_HEIGHT);
 
 	for (int i = 0; i < GRID_HEIGHT; ++i)
+	{
 		for (int j = 0; j < GRID_WIDTH; ++j)
 		{
 			int c;
 			file >> c;
 			m_grid[j][i] = (TileType)c;
 		}
+	}
 
-	m_vertices.resize(GRID_WIDTH * GRID_HEIGHT * 4);
+	std::cout << GRID_WIDTH << "x" << GRID_HEIGHT << std::endl;
+
+	int ignored = 0;
 
 	for (int i = 0; i < GRID_WIDTH; ++i)
+	{
 		for (int j = 0; j < GRID_HEIGHT; ++j)
 		{
 			int tileNumber = (int)m_grid[i][j];
 
-			sf::Vertex* quad = &m_vertices[(i + j * GRID_WIDTH) * 4];
-
-			quad[0].position = sf::Vector2f(i * TILE_SIZE, j * TILE_SIZE);
-			quad[1].position = sf::Vector2f((i + 1) * TILE_SIZE, j * TILE_SIZE);
-			quad[2].position = sf::Vector2f((i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE);
-			quad[3].position = sf::Vector2f(i * TILE_SIZE, (j + 1) * TILE_SIZE);
-
-			quad[0].texCoords = sf::Vector2f(tileNumber * TILE_SIZE, 0.f);
-			quad[1].texCoords = sf::Vector2f((tileNumber + 1) * TILE_SIZE, 0.f);
-			quad[2].texCoords = sf::Vector2f((tileNumber + 1) * TILE_SIZE, TILE_SIZE);
-			quad[3].texCoords = sf::Vector2f(tileNumber * TILE_SIZE, TILE_SIZE);
+			if (tileNumber != 0)
+			{
+				m_vertices.append(sf::Vertex(sf::Vector2f(i * TILE_SIZE, j * TILE_SIZE), 				sf::Vector2f(tileNumber * TILE_SIZE, 0.f)));
+				m_vertices.append(sf::Vertex(sf::Vector2f((i + 1) * TILE_SIZE, j * TILE_SIZE), 			sf::Vector2f((tileNumber + 1) * TILE_SIZE, 0.f)));
+				m_vertices.append(sf::Vertex(sf::Vector2f((i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE),	sf::Vector2f((tileNumber + 1) * TILE_SIZE, TILE_SIZE)));
+				m_vertices.append(sf::Vertex(sf::Vector2f(i * TILE_SIZE, (j + 1) * TILE_SIZE), 			sf::Vector2f(tileNumber * TILE_SIZE, TILE_SIZE)));
+			}
 		}
+	}
+
+	std::cout << "total ignored: " << ignored << std::endl;
+	std::cout << "grid size: " << GRID_WIDTH * GRID_HEIGHT << std::endl;
+	std::cout << "vertex array size: " << m_vertices.getVertexCount() << std::endl;
 
 	// Printing the grid in the console
 	/*for (int i = 0; i < GRID_HEIGHT; ++i)
@@ -123,8 +129,6 @@ sf::Vector2f Map::getWorldSize() const
 
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	states.transform *= getTransform();
 	states.texture = m_texture;
-
     target.draw(m_vertices, states);
 }

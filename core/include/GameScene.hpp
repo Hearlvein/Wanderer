@@ -23,7 +23,7 @@ public:
 	void moveEntity(MovingEntity& entity, bool* xCollision = nullptr);
 	void updateClimbingState(MovingEntity& entity);
 	void moveEnemy(Enemy& enemy);
-	void moveFireball(std::list<Fireball>::iterator& fb);
+	bool moveFireball(std::list<Fireball>::iterator& fb);
 	void moveCamera();
 	void addFireball();
 

@@ -132,7 +132,8 @@ void GameScene::update(float dt)
     for (auto fb = m_fireballs.begin(); fb != m_fireballs.end(); ++fb)
     {
     	fb->update(dt);
-    	moveFireball(fb);
+    	if (!moveFireball(fb))
+    		break;
     }
 
     moveCamera();
@@ -220,7 +221,7 @@ void GameScene::moveEnemy(Enemy& enemy)
 		enemy.toggleFacing();
 }
 
-void GameScene::moveFireball(std::list<Fireball>::iterator& fb)
+bool GameScene::moveFireball(std::list<Fireball>::iterator& fb)
 {
 	float x = fb->getPosition().x;
 	float y = fb->getPosition().y;
@@ -238,8 +239,13 @@ void GameScene::moveFireball(std::list<Fireball>::iterator& fb)
 			fb->setPosition(x, y);
 		}
 		else
+		{
 			fb = m_fireballs.erase(fb);
+			return false;
+		}
 	}
+
+	return true;
 }
 
 void GameScene::moveCamera()
