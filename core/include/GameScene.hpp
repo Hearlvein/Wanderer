@@ -42,4 +42,7 @@ private:
 	std::list<Fireball> m_fireballs;
 
 	std::map<std::string, Layer> m_layers;
+
+	bool m_imguiEnabled = true;
+	float m_dt;
 };

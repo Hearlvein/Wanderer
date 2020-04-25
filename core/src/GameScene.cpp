@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <imgui.h>
+#include <imgui-SFML.h>
 #include "GameScene.hpp"
 #include "Constants.hpp"
 #include "util.hpp"
@@ -8,7 +10,6 @@
 GameScene::GameScene(sf::RenderWindow* window)
 	: Scene(window), m_map(&m_texture)
 {
-	DEBUG_FC
 	LINE_TRACK
 	m_layers["backgroundLayer"].addObject(m_bgMgr.getDrawable());
 
@@ -71,7 +72,6 @@ void GameScene::handleEvent(const sf::Event& event)
 
 void GameScene::checkInput()
 {
-	DEBUG_FC
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
         m_player.setFacing(Right);
@@ -108,7 +108,9 @@ void GameScene::checkInput()
 
 void GameScene::update(float dt)
 {
-	DEBUG_FC
+
+	m_dt = dt;
+
 	// Entity collisions
 	for (auto enemyIt = m_enemiesList.begin(); enemyIt != m_enemiesList.end(); ++enemyIt)
 	{
@@ -161,14 +163,12 @@ void GameScene::update(float dt)
 
 void GameScene::updateClimbingState(MovingGameObject& entity)
 {
-	DEBUG_FC
 	if (entity.getYState() == Climbing && !m_map.touchingTile(m_player.getCurrentHitbox(), Ladder))
 		entity.setYState(Falling);
 }
 
 void GameScene::moveEntity(MovingGameObject& entity, bool* xCollision)
 {
-	DEBUG_FC
 	Box hitbox = entity.getCurrentHitbox();
 
 	float dx = entity.getMovement().x;
@@ -234,7 +234,6 @@ void GameScene::moveEntity(MovingGameObject& entity, bool* xCollision)
 
 void GameScene::moveEnemy(Enemy& enemy)
 {
-	DEBUG_FC
 	bool xCollision = false;
 	moveEntity(enemy, &xCollision);
 	if (xCollision)
@@ -270,32 +269,15 @@ void GameScene::moveEnemy(Enemy& enemy)
 
 void GameScene::moveCamera()
 {
-	DEBUG_FC
 	sf::View currentView = m_window->getView();
 
-	float playerLeftPadding = m_window->mapCoordsToPixel(m_player.getPosition()).x;
-	float playerRightPadding = SCREEN_WIDTH - (m_window->mapCoordsToPixel(m_player.getPosition()).x + m_player.getCurrentTextureRect().left);
+	auto tR = m_player.getCurrentTextureRect();
 
-	if (playerRightPadding < m_screenPadding)
-    {
-        currentView.move(m_screenPadding - playerRightPadding, 0.f);
-
-        float rightScreenOffset = SCREEN_WIDTH - m_window->mapCoordsToPixel(m_map.getWorldSize(), currentView).x;
-        if (rightScreenOffset > 0.f)
-            currentView.move(-rightScreenOffset, 0.f);
-    }
-    else if (playerLeftPadding < m_screenPadding)
-    {
-        currentView.move(playerLeftPadding - m_screenPadding, 0.f);
-
-        float leftScreenOffset = m_window->mapCoordsToPixel(sf::Vector2f(), currentView).x;
-        // std::cout << "left screen padding=" << leftScreenOffset << std::endl;
-        if (leftScreenOffset > 0.f)
-        {
-            // std::cout << "black offset" << std::endl;
-            currentView.move(leftScreenOffset, 0.f);
-        }
-    }
+	float moveRight = m_window->mapCoordsToPixel(sf::Vector2f(static_cast<float>(tR.left + tR.width), 0.f), currentView).x
+		- m_window->mapCoordsToPixel(sf::Vector2f(m_screenPadding, 0.f), currentView).x;
+	std::cout << "move right=" << moveRight << std::endl;
+	if (moveRight > 0.f)
+		currentView.move(moveRight, 0.f);
 
     m_bgMgr.update(currentView.getCenter() - m_window->getView().getCenter());
 
@@ -330,5 +312,8 @@ void GameScene::draw(sf::RenderTarget& target)
     // target.draw(m_layers["mobsLayer"]);
     target.draw(m_layers["playerLayer"]);
     target.draw(m_layers["fireballsLayers"]);
+
+    if (m_imguiEnabled)
+    	ImGui::Text("Frame took %f FPS=%f", m_dt, 1 / m_dt);
 }
 

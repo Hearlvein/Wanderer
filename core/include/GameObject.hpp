@@ -27,5 +27,5 @@ private:
 	void setSize(float x, float y);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-    std::unique_ptr<Box> m_currentHitbox;
+    Box m_currentHitbox;
 };

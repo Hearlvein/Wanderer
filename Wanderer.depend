@@ -416,7 +416,7 @@
 	<SFML/Graphics/Drawable.hpp>
 	<SFML/Window/GlResource.hpp>
 
-1587809557 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gameobject.hpp
+1587831952 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gameobject.hpp
 	<SFML/Graphics.hpp>
 	<memory>
 	<vector>
@@ -480,8 +480,9 @@
 1586543250 c:\users\constance chaintron\desktop\dev\wanderer\core\include\scene.hpp
 	<SFML/Graphics.hpp>
 
-1587809557 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gameobject.cpp
+1587832208 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gameobject.cpp
 	"GameObject.hpp"
+	"debug.hpp"
 
 1586542898 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\main.cpp
 	"Game.hpp"
@@ -516,13 +517,15 @@
 1586542832 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scene.cpp
 	"Scene.hpp"
 
-1587821093 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scenemanager.cpp
+1587832754 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scenemanager.cpp
 	<iostream>
+	<imgui.h>
+	<imgui-SFML.h>
 	"SceneManager.hpp"
 	"GameScene.hpp"
 	"Constants.hpp"
 
-1587809057 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gamescene.hpp
+1587833428 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gamescene.hpp
 	"Scene.hpp"
 	"Map.hpp"
 	"Player.hpp"
@@ -536,9 +539,11 @@
 1586639081 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\util.cpp
 	"util.hpp"
 
-1587821122 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gamescene.cpp
+1587833777 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gamescene.cpp
 	<iostream>
 	<cmath>
+	<imgui.h>
+	<imgui-SFML.h>
 	"GameScene.hpp"
 	"Constants.hpp"
 	"util.hpp"
@@ -1154,7 +1159,7 @@
 1587820129 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\debug.cpp
 	"debug.hpp"
 
-1587820988 c:\users\constance chaintron\desktop\dev\wanderer\core\include\debug.hpp
+1587833808 c:\users\constance chaintron\desktop\dev\wanderer\core\include\debug.hpp
 	<fstream>
 	<chrono>
 

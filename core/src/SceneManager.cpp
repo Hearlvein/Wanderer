@@ -1,4 +1,6 @@
 #include <iostream>
+#include <imgui.h>
+#include <imgui-SFML.h>
 #include "SceneManager.hpp"
 #include "GameScene.hpp"
 #include "Constants.hpp"
@@ -29,6 +31,8 @@ void SceneManager::setCurrentScene(Scene* currentScene)
 
 void SceneManager::run()
 {
+	ImGui::SFML::Init(m_window);
+
 	sf::Clock clock;
 
 	while (m_window.isOpen())
@@ -36,6 +40,8 @@ void SceneManager::run()
 		sf::Event event;
 		while (m_window.pollEvent(event))
 		{
+			ImGui::SFML::ProcessEvent(event);
+
 			if (event.type == sf::Event::Closed)
 				m_window.close();
 			else
@@ -43,9 +49,18 @@ void SceneManager::run()
 		}
 
 		m_currentScene->checkInput();
-		m_currentScene->update(clock.restart().asSeconds());
+
+		sf::Time dt = clock.restart();
+		ImGui::SFML::Update(m_window, dt);
+		m_currentScene->update(dt.asSeconds());
+
 		m_window.clear();
+
 		m_currentScene->draw(m_window);
+		ImGui::SFML::Render(m_window);
+
 		m_window.display();
 	}
+
+	ImGui::SFML::Shutdown();
 }
