@@ -1,8 +1,8 @@
 #pragma once
 
-#include "MovingEntity.hpp"
+#include "MovingGameObject.hpp"
 
-class Fireball : public MovingEntity
+class Fireball : public MovingGameObject
 {
 public:
 	Fireball();

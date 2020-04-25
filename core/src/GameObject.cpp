@@ -15,19 +15,20 @@ const sf::Vector2f& GameObject::getPosition() const
 	return m_sprite.getPosition();
 }
 
-const sf::Vector2f& GameObject::getSize() const
+void GameObject::setTextureRect(const sf::IntRect& textureRect, const sf::Vector2f* newHitboxSize)
 {
-	return m_size;
-}
+	m_sprite.setTextureRect(textureRect);
 
-const sf::Vector2i GameObject::getTexturePosition() const
-{
-	return sf::Vector2i(m_sprite.getTextureRect().left, m_sprite.getTextureRect().top);
-}
-
-void GameObject::setTexturePosition(const sf::Vector2i& position)
-{
-	m_sprite.setTextureRect(sf::IntRect(position.x, position.y, static_cast<int>(m_size.x), static_cast<int>(m_size.y)));
+	if (newHitboxSize)
+	{
+		m_currentHitbox->w = newHitboxSize->x;
+		m_currentHitbox->h = newHitboxSize->y;
+	}
+	else
+	{
+		m_currentHitbox->w = static_cast<float>(textureRect.width);
+		m_currentHitbox->h = static_cast<float>(textureRect.height);
+	}
 }
 
 void GameObject::setTexture(const sf::Texture& texture)
@@ -35,14 +36,23 @@ void GameObject::setTexture(const sf::Texture& texture)
 	m_sprite.setTexture(texture);
 }
 
+const Box& GameObject::getCurrentHitbox() const
+{
+	return *m_currentHitbox;
+}
+
 void GameObject::setPosition(float x, float y)
 {
+	m_currentHitbox->x = x;
+	m_currentHitbox->y = y;
+
 	m_sprite.setPosition(x, y);
 }
 
 void GameObject::setSize(float x, float y)
 {
-	m_size = sf::Vector2f(x, y);
+	m_currentHitbox->w = x;
+	m_currentHitbox->h = y;
 }
 
 void GameObject::draw(sf::RenderTarget& target, sf::RenderStates states) const

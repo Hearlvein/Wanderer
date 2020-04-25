@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1587149539 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\animatedentity.cpp
-	"AnimatedEntity.hpp"
+1587149539 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\AnimatedGameObject.cpp
+	"AnimatedGameObject.hpp"
 	<iostream>
 
-1587149380 c:\users\constance chaintron\desktop\dev\wanderer\core\include\animatedentity.hpp
+1587149380 c:\users\constance chaintron\desktop\dev\wanderer\core\include\AnimatedGameObject.hpp
 	<SFML/Graphics.hpp>
 	"GameObject.hpp"
 
@@ -416,10 +416,13 @@
 	<SFML/Graphics/Drawable.hpp>
 	<SFML/Window/GlResource.hpp>
 
-1587403528 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gameobject.hpp
+1587809557 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gameobject.hpp
 	<SFML/Graphics.hpp>
+	<memory>
+	<vector>
+	"Box.hpp"
 
-1587401958 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\character.cpp
+1587809057 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\character.cpp
 	"Constants.hpp"
 	"Character.hpp"
 	"util.hpp"
@@ -427,11 +430,11 @@
 1587487663 c:\users\constance chaintron\desktop\dev\wanderer\core\include\constants.hpp
 	<string>
 
-1587333354 c:\users\constance chaintron\desktop\dev\wanderer\core\include\character.hpp
-	"MovingEntity.hpp"
-	"AnimatedEntity.hpp"
+1587809057 c:\users\constance chaintron\desktop\dev\wanderer\core\include\character.hpp
+	"MovingGameObject.hpp"
+	"AnimatedGameObject.hpp"
 
-1587410427 c:\users\constance chaintron\desktop\dev\wanderer\core\include\movingentity.hpp
+1587410427 c:\users\constance chaintron\desktop\dev\wanderer\core\include\MovingGameObject.hpp
 	"GameObject.hpp"
 	"yState.hpp"
 	"WalkingState.hpp"
@@ -459,11 +462,12 @@
 	<iostream>
 	<cmath>
 
-1587403776 c:\users\constance chaintron\desktop\dev\wanderer\core\include\fireball.hpp
-	"MovingEntity.hpp"
+1587809058 c:\users\constance chaintron\desktop\dev\wanderer\core\include\fireball.hpp
+	"MovingGameObject.hpp"
 
-1586542946 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\game.cpp
+1587820212 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\game.cpp
 	"Game.hpp"
+	"debug.hpp"
 
 1586542737 c:\users\constance chaintron\desktop\dev\wanderer\core\include\game.hpp
 	<SFML/Graphics.hpp>
@@ -476,29 +480,30 @@
 1586543250 c:\users\constance chaintron\desktop\dev\wanderer\core\include\scene.hpp
 	<SFML/Graphics.hpp>
 
-1587403511 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gameobject.cpp
+1587809557 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gameobject.cpp
 	"GameObject.hpp"
 
 1586542898 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\main.cpp
 	"Game.hpp"
 
-1587667150 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\map.cpp
+1587809413 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\map.cpp
 	<iostream>
 	<fstream>
 	<cmath>
 	"Map.hpp"
 	"Constants.hpp"
 
-1587662725 c:\users\constance chaintron\desktop\dev\wanderer\core\include\map.hpp
+1587809318 c:\users\constance chaintron\desktop\dev\wanderer\core\include\map.hpp
 	"TileType.hpp"
+	"Box.hpp"
 	<SFML/Graphics.hpp>
 	<vector>
 	<string>
 
 1587216226 c:\users\constance chaintron\desktop\dev\wanderer\core\include\tiletype.hpp
 
-1587404561 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\movingentity.cpp
-	"MovingEntity.hpp"
+1587404561 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\MovingGameObject.cpp
+	"MovingGameObject.hpp"
 	<iostream>
 	<cmath>
 
@@ -511,31 +516,33 @@
 1586542832 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scene.cpp
 	"Scene.hpp"
 
-1587576105 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scenemanager.cpp
+1587821093 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\scenemanager.cpp
 	<iostream>
 	"SceneManager.hpp"
 	"GameScene.hpp"
 	"Constants.hpp"
 
-1587667600 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gamescene.hpp
+1587809057 c:\users\constance chaintron\desktop\dev\wanderer\core\include\gamescene.hpp
 	"Scene.hpp"
 	"Map.hpp"
 	"Player.hpp"
 	"Enemy.hpp"
 	"Fireball.hpp"
 	"Layer.hpp"
+	"BackgroundManager.hpp"
 	<list>
 	<memory>
 
 1586639081 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\util.cpp
 	"util.hpp"
 
-1587667620 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gamescene.cpp
+1587821122 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\gamescene.cpp
 	<iostream>
 	<cmath>
 	"GameScene.hpp"
 	"Constants.hpp"
 	"util.hpp"
+	"debug.hpp"
 
 1587662725 c:\users\constance chaintron\desktop\dev\wanderer\core\include\layer.hpp
 	<SFML/Graphics.hpp>
@@ -972,4 +979,182 @@
 	<SFML/Graphics/PrimitiveType.hpp>
 	<SFML/Graphics/Drawable.hpp>
 	<SFML/Window/GlResource.hpp>
+
+1587724089 source:c:\users\constance chaintron\desktop\dev\wanderer\vendor\imgui\imgui-sfml.cpp
+	"imgui-SFML.h"
+	<imgui.h>
+	<SFML/Config.hpp>
+	<SFML/Graphics/Color.hpp>
+	<SFML/Graphics/RenderTarget.hpp>
+	<SFML/Graphics/RenderWindow.hpp>
+	<SFML/Graphics/Sprite.hpp>
+	<SFML/Graphics/Texture.hpp>
+	<SFML/OpenGL.hpp>
+	<SFML/Window/Clipboard.hpp>
+	<SFML/Window/Cursor.hpp>
+	<SFML/Window/Event.hpp>
+	<SFML/Window/Touch.hpp>
+	<SFML/Window/Window.hpp>
+	<cassert>
+	<cmath>
+	<cstddef>
+	<cstring>
+	<android/native_activity.h>
+	<jni.h>
+	<SFML/System/NativeActivity.hpp>
+
+1587724089 c:\users\constance chaintron\desktop\dev\libs\imgui-sfml\imgui-sfml.h
+	<SFML/System/Vector2.hpp>
+	<SFML/Graphics/Rect.hpp>
+	<SFML/Graphics/Color.hpp>
+	<SFML/System/Time.hpp>
+	<SFML/Window/Joystick.hpp>
+	"imgui-SFML_export.h"
+
+1587724089 c:\users\constance chaintron\desktop\dev\libs\imgui-sfml\imgui-sfml_export.h
+
+1587723561 c:\users\constance chaintron\desktop\dev\libs\imgui\imgui.h
+	"imconfig.h"
+	<float.h>
+	<stdarg.h>
+	<stddef.h>
+	<string.h>
+	<assert.h>
+	<stdint.h>
+	"imgui_user.h"
+
+1587724918 c:\users\constance chaintron\desktop\dev\libs\imgui\imconfig.h
+	"imconfig-SFML.h"
+
+1587724089 c:\users\constance chaintron\desktop\dev\libs\imgui-sfml\imconfig-sfml.h
+	<SFML/System/Vector2.hpp>
+	<SFML/Graphics/Color.hpp>
+	"imgui-SFML_export.h"
+
+1586007369 c:\users\constance chaintron\desktop\dev\libs\sfml-2.5.1-mingw\include\sfml\opengl.hpp
+	<SFML/Config.hpp>
+	<windows.h>
+	<GL/gl.h>
+	<GLES/gl.h>
+	<GLES/glext.h>
+	<GL/gl.h>
+	<OpenGL/gl.h>
+	<OpenGLES/ES1/gl.h>
+	<OpenGLES/ES1/glext.h>
+	<GLES/gl.h>
+	<GLES/glext.h>
+	<GLES2/gl2platform.h>
+	<GLES2/gl2ext.h>
+
+1586007373 c:\users\constance chaintron\desktop\dev\libs\sfml-2.5.1-mingw\include\sfml\system\nativeactivity.hpp
+	<SFML/System/Export.hpp>
+
+1587723561 source:c:\users\constance chaintron\desktop\dev\wanderer\vendor\imgui\imgui.cpp
+	"imgui.h"
+	"imgui_internal.h"
+	<ctype.h>
+	<stdio.h>
+	<stddef.h>
+	<stdint.h>
+	<Windows.h>
+	<windows.h>
+	<TargetConditionals.h>
+	"stb_sprintf.h"
+	<Carbon/Carbon.h>
+	<imm.h>
+	"imgui_user.inl"
+
+1587723561 c:\users\constance chaintron\desktop\dev\libs\imgui\imgui_internal.h
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<limits.h>
+	"imstb_textedit.h"
+
+1587723561 c:\users\constance chaintron\desktop\dev\libs\imgui\imstb_textedit.h
+	<string.h>
+
+1587723561 source:c:\users\constance chaintron\desktop\dev\wanderer\vendor\imgui\imgui_demo.cpp
+	"imgui.h"
+	<ctype.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdint.h>
+
+1587723561 source:c:\users\constance chaintron\desktop\dev\wanderer\vendor\imgui\imgui_draw.cpp
+	"imgui.h"
+	"imgui_internal.h"
+	<stdio.h>
+	<alloca.h>
+	<malloc.h>
+	<stdlib.h>
+	"imstb_rectpack.h"
+	"imstb_truetype.h"
+
+1587723561 c:\users\constance chaintron\desktop\dev\libs\imgui\imstb_rectpack.h
+	<stdlib.h>
+	<assert.h>
+
+1587723561 c:\users\constance chaintron\desktop\dev\libs\imgui\imstb_truetype.h
+	"stb_truetype.h"
+	<stdio.h>
+	"stb_truetype.h"
+	<math.h>
+	<math.h>
+	<math.h>
+	<math.h>
+	<math.h>
+	<stdlib.h>
+	<assert.h>
+	<string.h>
+	<string.h>
+
+1587723561 source:c:\users\constance chaintron\desktop\dev\wanderer\vendor\imgui\imgui_widgets.cpp
+	"imgui.h"
+	"imgui_internal.h"
+	<ctype.h>
+	<stddef.h>
+	<stdint.h>
+	"imstb_textedit.h"
+
+1587753113 c:\users\constance chaintron\desktop\dev\wanderer\core\include\backgroundmanager.hpp
+	<SFML/Graphics.hpp>
+	"Constants.hpp"
+
+1587805925 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\backgroundmanager.cpp
+	"BackgroundManager.hpp"
+
+1587806167 c:\users\constance chaintron\desktop\dev\wanderer\core\include\movinggameobject.hpp
+	"GameObject.hpp"
+	"yState.hpp"
+	"WalkingState.hpp"
+	"Direction.hpp"
+
+1587816999 c:\users\constance chaintron\desktop\dev\wanderer\core\include\box.hpp
+
+1587808318 c:\users\constance chaintron\desktop\dev\wanderer\core\include\animatedgameobject.hpp
+	<SFML/Graphics.hpp>
+	"GameObject.hpp"
+
+1587808364 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\animatedgameobject.cpp
+	"AnimatedGameObject.hpp"
+	<iostream>
+
+1587806202 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\movinggameobject.cpp
+	"MovingGameObject.hpp"
+	<iostream>
+	<cmath>
+
+1587816999 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\box.cpp
+	"Box.hpp"
+
+1587820129 source:c:\users\constance chaintron\desktop\dev\wanderer\core\src\debug.cpp
+	"debug.hpp"
+
+1587820988 c:\users\constance chaintron\desktop\dev\wanderer\core\include\debug.hpp
+	<fstream>
+	<chrono>
 

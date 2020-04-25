@@ -24,7 +24,7 @@ void Character::update(float dt)
 	if (!isAlive())
 		std::cout << "character died" << std::endl;
 
-	MovingEntity::update(dt);
+	MovingGameObject::update(dt);
 
 	// Link bases
 	if (m_yState == Climbing)
@@ -43,7 +43,7 @@ void Character::update(float dt)
 				setCurrentSeq("left");
 	}
 
-	AnimatedEntity::update(dt);
+	AnimatedGameObject::update(dt);
 }
 
 void Character::takeDamage(unsigned int amount)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TileType.hpp"
+#include "Box.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -19,8 +20,8 @@ public:
 	// Read-write
 	std::vector<TileType>& operator[](int n);
 
-	bool isEmptyArea(float x, float y, float w, float h) const;
-	bool touchingTile(float x, float y, float w, float h, const TileType& tileType) const;
+	bool isEmptyArea(const Box& box) const;
+	bool touchingTile(const Box& box, const TileType& tileType) const;
 	sf::Vector2f getWorldSize() const;
 
 private:

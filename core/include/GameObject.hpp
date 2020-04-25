@@ -1,7 +1,11 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <memory>
+#include <vector>
+#include "Box.hpp"
 
+/** The class GameObject represents in-game solids **/
 class GameObject : public sf::Drawable
 {
 public:
@@ -10,18 +14,18 @@ public:
 
 	virtual void update(float dt) = 0;
 	const sf::Vector2f& getPosition() const;
-	const sf::Vector2f& getSize() const;
-	const sf::Vector2i getTexturePosition() const;
-	void setTexturePosition(const sf::Vector2i& position);
+	void setTextureRect(const sf::IntRect& textureRect, const sf::Vector2f* newHitboxSize = nullptr);
 	void setTexture(const sf::Texture& texture);
+	const Box& getCurrentHitbox() const;
 
 private:
 	friend class GameScene;
+
+	sf::Sprite m_sprite;
 
 	void setPosition(float x, float y);
 	void setSize(float x, float y);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-	sf::Sprite m_sprite;
-    sf::Vector2f m_size = { 50.f, 100.f };
+    std::unique_ptr<Box> m_currentHitbox;
 };

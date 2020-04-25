@@ -80,15 +80,15 @@ std::vector<TileType>& Map::operator[](int n)
 	return m_grid[n];
 }
 
-bool Map::isEmptyArea(float x, float y, float w, float h) const
+bool Map::isEmptyArea(const Box& box) const
 {
-	if (x < 0.f || y < 0.f || (x + w) > GRID_WIDTH * TILE_SIZE || (y + h) > GRID_HEIGHT * TILE_SIZE)
+	if (box.x < 0.f || box.y < 0.f || (box.x + box.w) > GRID_WIDTH * TILE_SIZE || (box.y + box.h) > GRID_HEIGHT * TILE_SIZE)
 		return false;
 
-	int x_min = (int)std::floor(x / TILE_SIZE);
-	int y_min = (int)std::floor(y / TILE_SIZE);
-	int x_max = (int)std::ceil((x + w - 1) / TILE_SIZE);
-	int y_max = (int)std::ceil((y + h - 1) / TILE_SIZE);
+	int x_min = (int)std::floor(box.x / TILE_SIZE);
+	int y_min = (int)std::floor(box.y / TILE_SIZE);
+	int x_max = (int)std::ceil((box.x + box.w - 1) / TILE_SIZE);
+	int y_max = (int)std::ceil((box.y + box.h - 1) / TILE_SIZE);
 
 	for (int i = x_min; i < x_max; ++i)
 		for (int j = y_min; j < y_max; ++j)
@@ -101,15 +101,15 @@ bool Map::isEmptyArea(float x, float y, float w, float h) const
 	return true;
 }
 
-bool Map::touchingTile(float x, float y, float w, float h, const TileType& tileType) const
+bool Map::touchingTile(const Box& box, const TileType& tileType) const
 {
-	if (x < 0.f || y < 0.f || (x + w) > GRID_WIDTH * TILE_SIZE || (y + h) > GRID_HEIGHT * TILE_SIZE)
+	if (box.x < 0.f || box.y < 0.f || (box.x + box.w) > GRID_WIDTH * TILE_SIZE || (box.y + box.h) > GRID_HEIGHT * TILE_SIZE)
 		return false;
 
-	int x_min = (int)std::floor(x / TILE_SIZE);
-	int y_min = (int)std::floor(y / TILE_SIZE);
-	int x_max = (int)std::ceil((x + w - 1) / TILE_SIZE);
-	int y_max = (int)std::ceil((y + h - 1) / TILE_SIZE);
+	int x_min = (int)std::floor(box.x / TILE_SIZE);
+	int y_min = (int)std::floor(box.y / TILE_SIZE);
+	int x_max = (int)std::ceil((box.x + box.w - 1) / TILE_SIZE);
+	int y_max = (int)std::ceil((box.y + box.h - 1) / TILE_SIZE);
 
 	for (int i = x_min; i < x_max; ++i)
 		for (int j = y_min; j < y_max; ++j)
