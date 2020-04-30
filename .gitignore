@@ -12,6 +12,11 @@
 *.cbp
 *.depend
 *.layout
+.gitignore
+debug.txt
+vs.code-workspace
+.git/*
+.vscode/*
 
 # Packages #
 ############
@@ -41,3 +46,4 @@
 .Trashes
 ehthumbs.db
 Thumbs.dbx
+
