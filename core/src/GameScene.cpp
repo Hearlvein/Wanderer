@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
-#include <imgui.h>
 #include <imgui-SFML.h>
+#include <imgui.h>
 #include "GameScene.hpp"
 #include "Constants.hpp"
 #include "util.hpp"
