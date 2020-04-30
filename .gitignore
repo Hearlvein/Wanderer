@@ -12,7 +12,6 @@
 *.cbp
 *.depend
 *.layout
-.gitignore
 debug.txt
 imgui.ini
 vs.code-workspace
