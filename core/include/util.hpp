@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -9,3 +10,4 @@
 
 float sign(float number);
 void out(const char* message);
+float distance(const sf::Vector2f& vec);

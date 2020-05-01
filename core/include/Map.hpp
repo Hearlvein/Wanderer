@@ -20,7 +20,6 @@ public:
 	// Read-write
 	std::vector<TileType>& operator[](int n);
 
-	bool isEmptyArea(const Box& box) const;
 	bool touchingTile(const Box& box, const TileType& tileType) const;
 	sf::Vector2f getWorldSize() const;
 

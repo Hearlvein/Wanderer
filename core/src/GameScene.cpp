@@ -184,7 +184,7 @@ void GameScene::moveEntity(MovingGameObject& entity, bool* xCollision)
             std::cout << " -> " << dy << std::endl;
         }
 
-		if (m_map.isEmptyArea({hitbox.x, hitbox.y+dy, hitbox.w, hitbox.h}))
+		if (!m_map.touchingTile({hitbox.x, hitbox.y+dy, hitbox.w, hitbox.h}, SolidBlock))
 			hitbox.y += dy;
 		else
 		{
@@ -211,7 +211,7 @@ void GameScene::moveEntity(MovingGameObject& entity, bool* xCollision)
             std::cout << " -> " << dx << std::endl;
         }
 
-        if (m_map.isEmptyArea({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}))
+        if (!m_map.touchingTile({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}, SolidBlock))
 			hitbox.x += dx;
 		else
 		{
@@ -225,7 +225,7 @@ void GameScene::moveEntity(MovingGameObject& entity, bool* xCollision)
             //entity.setWalkingState(Idle);
 		}
 
-		if (entity.getYState() != Jumping && m_map.isEmptyArea({hitbox.x, hitbox.y+2.f, hitbox.w, hitbox.h}))
+		if (entity.getYState() != Jumping && !m_map.touchingTile({hitbox.x, hitbox.y+2.f, hitbox.w, hitbox.h}, SolidBlock))
 			entity.setYState(Falling);
 	}
 
@@ -252,7 +252,7 @@ void GameScene::moveEnemy(Enemy& enemy)
 	// X checking
 	if (dx != 0.f)
 	{
-		if (m_map.isEmptyArea(x+dx, y, w, h))
+		if (m_map.touchingTile(x+dx, y, w, h))
 		{
 			x += dx;
 			fb->setPosition(x, y);
@@ -271,17 +271,15 @@ void GameScene::moveCamera()
 {
 	sf::View currentView = m_window->getView();
 
-	auto tR = m_player.getCurrentTextureRect();
+	sf::Vector2f playerCenter(m_player.getPosition().x + m_player.getCurrentTextureRect().width / 2, m_player.getPosition().y + m_player.getCurrentTextureRect().height / 2);
+	sf::Vector2f vecCenter = playerCenter - currentView.getCenter();
+	// if (distance(vecCenter) > m_screenPadding)
+	// {
+		currentView.move(vecCenter);
+		m_bgMgr.update(currentView.getCenter() - m_window->getView().getCenter());
+		m_window->setView(currentView);
 
-	float moveRight = m_window->mapCoordsToPixel(sf::Vector2f(static_cast<float>(tR.left + tR.width), 0.f), currentView).x
-		- m_window->mapCoordsToPixel(sf::Vector2f(m_screenPadding, 0.f), currentView).x;
-	std::cout << "move right=" << moveRight << std::endl;
-	if (moveRight > 0.f)
-		currentView.move(moveRight, 0.f);
-
-    m_bgMgr.update(currentView.getCenter() - m_window->getView().getCenter());
-
-    m_window->setView(currentView);
+	// }
 }
 
 /*void GameScene::addFireball()

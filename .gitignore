@@ -12,11 +12,6 @@
 *.cbp
 *.depend
 *.layout
-debug.txt
-imgui.ini
-vs.code-workspace
-.git/*
-.vscode/*
 
 # Packages #
 ############
@@ -46,4 +41,3 @@ vs.code-workspace
 .Trashes
 ehthumbs.db
 Thumbs.dbx
-

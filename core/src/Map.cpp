@@ -80,27 +80,6 @@ std::vector<TileType>& Map::operator[](int n)
 	return m_grid[n];
 }
 
-bool Map::isEmptyArea(const Box& box) const
-{
-	if (box.x < 0.f || box.y < 0.f || (box.x + box.w) > GRID_WIDTH * TILE_SIZE || (box.y + box.h) > GRID_HEIGHT * TILE_SIZE)
-		return false;
-
-	int x_min = (int)std::floor(box.x / TILE_SIZE);
-	int y_min = (int)std::floor(box.y / TILE_SIZE);
-	int x_max = (int)std::ceil((box.x + box.w - 1) / TILE_SIZE);
-	int y_max = (int)std::ceil((box.y + box.h - 1) / TILE_SIZE);
-
-	for (int i = x_min; i < x_max; ++i)
-		for (int j = y_min; j < y_max; ++j)
-			if (m_grid[i][j] == SolidBlock)
-			{
-				//std::cout << "(" << i << ";" << j << ") returned is SolidBlock!" << std::endl;
-				return false;
-			}
-
-	return true;
-}
-
 bool Map::touchingTile(const Box& box, const TileType& tileType) const
 {
 	if (box.x < 0.f || box.y < 0.f || (box.x + box.w) > GRID_WIDTH * TILE_SIZE || (box.y + box.h) > GRID_HEIGHT * TILE_SIZE)
