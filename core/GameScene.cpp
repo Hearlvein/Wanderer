@@ -21,22 +21,10 @@ GameScene::GameScene(sf::RenderWindow* window)
 
 	m_player.setTexture(m_texture);
 	m_player.setPosition(100.f, 50.f);
-
-	m_player.addTextureRectAndHitbox("right", sf::IntRect(0, 50, 50, 100), sf::FloatRect(0.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("right", sf::IntRect(50, 50, 50, 100), sf::FloatRect(50.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("left", sf::IntRect(100, 50, 50, 100), sf::FloatRect(100.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("left", sf::IntRect(150, 50, 50, 100), sf::FloatRect(150.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("idleRight", sf::IntRect(0, 50, 50, 100), sf::FloatRect(0.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("idleLeft", sf::IntRect(100, 50, 50, 100), sf::FloatRect(100.f, 50.f, 50.f, 100.f));
-	m_player.addTextureRectAndHitbox("climbing", sf::IntRect(250, 50, 50, 100), sf::FloatRect(200.f, 50.f, 50.f, 100.f));
-
-	m_player.setCurrentSeq("idleRight");
 	m_layers["playerLayer"].addObject(&m_player);
 
-	LINE_TRACK
 
-
-	for (std::size_t i = 0; i < 2; ++i)
+	/*for (std::size_t i = 0; i < 2; ++i)
 	{
 		m_enemiesList.push_back(Enemy());
 		Enemy& enemy = m_enemiesList.back();
@@ -51,7 +39,7 @@ GameScene::GameScene(sf::RenderWindow* window)
 		enemy.setWalkingState(Beginning);
 		enemy.setPosition(static_cast<float>(i + 1) * 500.f, 150.f);
 		m_layers["mobsLayer"].addObject(&enemy);
-	}
+	}*/
 }
 
 GameScene::~GameScene()
@@ -103,7 +91,7 @@ void GameScene::update(float dt)
 	m_lastDt = dt;
 
 	// Entity collisions
-	if (!m_player.isInvicible())
+	/*if (!m_player.isInvicible())
 	{
 		for (auto enemyIt = m_enemiesList.begin(); enemyIt != m_enemiesList.end(); ++enemyIt)
 		{
@@ -118,18 +106,18 @@ void GameScene::update(float dt)
 				m_player.setIsInvicible(true, 2.f);
 			}
 		}
-	}
+	}*/
 
 	m_player.update(dt);
 	updateClimbingState(m_player);
 	moveEntity(m_player);
 
-	for (auto& enemy : m_enemiesList)
+	/*for (auto& enemy : m_enemiesList)
     {
         enemy.update(dt);
         updateClimbingState(enemy);
         moveEnemy(enemy);
-    }
+    }*/
 
     moveCamera();
 }
@@ -232,7 +220,7 @@ void GameScene::draw(sf::RenderTarget& target)
     DEBUG_FC
     target.draw(m_layers["backgroundLayer"]);
     target.draw(m_layers["mapLayer"]);
-    target.draw(m_layers["mobsLayer"]);
+    // target.draw(m_layers["mobsLayer"]);
     target.draw(m_layers["playerLayer"]);
 
     if (m_imguiEnabled)

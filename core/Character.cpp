@@ -4,7 +4,8 @@
 
 Character::Character()
 {
-
+    AnimatedGameObject::loadFromFile(animationsPath + "player.txt");
+    AnimatedGameObject::setCurrentAnimationName("right");
 }
 
 Character::~Character()
@@ -28,22 +29,22 @@ void Character::update(float dt)
 
 	// Link bases
 	if (m_yState == YState::Climbing)
-		setCurrentSeq("climbing");
+		AnimatedGameObject::setCurrentAnimationName("climbing");
 	else
 	{
 		if (m_facing == Direction::Right)
 			if (m_walkingState == WalkingState::Idle)
-				setCurrentSeq("idleRight");
+				AnimatedGameObject::setCurrentAnimationName("idleRight");
 			else
-				setCurrentSeq("right");
+				AnimatedGameObject::setCurrentAnimationName("right");
 		else
 			if (m_walkingState == WalkingState::Idle)
-				setCurrentSeq("idleLeft");
+				AnimatedGameObject::setCurrentAnimationName("idleLeft");
 			else
-				setCurrentSeq("left");
+				AnimatedGameObject::setCurrentAnimationName("left");
 	}
 
-	AnimatedGameObject::update(dt);
+	AnimatedGameObject::increaseElapsedTime(dt);
 }
 
 void Character::takeDamage(unsigned int amount)

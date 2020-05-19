@@ -16,7 +16,7 @@ public:
 	const sf::Vector2f& getPosition() const;
 	void setTextureRect(const sf::IntRect& textureRect, const sf::Vector2f* newHitboxSize = nullptr);
 	void setTexture(const sf::Texture& texture);
-	const Box& getCurrentHitbox() const;
+	virtual const Box& getCurrentHitbox() const;
 
 private:
 	friend class GameScene;

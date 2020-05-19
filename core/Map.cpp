@@ -21,26 +21,17 @@ void Map::load(const std::string& filename)
 	file >> GRID_WIDTH;
 	file >> GRID_HEIGHT;
 
-	m_tilesPropertiesGrid.resize(GRID_WIDTH);
-	m_tilesTypeGrid.resize(GRID_WIDTH);
+	m_grid.resize(GRID_WIDTH);
 	for (int i = 0; i < GRID_WIDTH; ++i)
-	{
-		m_tilesPropertiesGrid[i].resize(GRID_HEIGHT);
-		m_tilesTypeGrid[i].resize(GRID_HEIGHT);
-	}
+		m_grid[i].resize(GRID_HEIGHT);
 
 	for (int i = 0; i < GRID_HEIGHT; ++i)
 	{
 		for (int j = 0; j < GRID_WIDTH; ++j)
 		{
-			int c;
+			char c;
 			file >> c;
-			m_tilesTypeGrid[j][i] = (TileType)c;
-
-			if 		(m_tilesTypeGrid[j][i] == VoidTile)	  m_tilesPropertiesGrid[j][i] = Void;
-			else if (m_tilesTypeGrid[j][i] == SolidTile1) m_tilesPropertiesGrid[j][i] = Solid;
-			else if (m_tilesTypeGrid[j][i] == SolidTile2) m_tilesPropertiesGrid[j][i] = Solid;
-			else if (m_tilesTypeGrid[j][i] == LadderTile) m_tilesPropertiesGrid[j][i] = Ladder;
+			m_grid[j][i] = Tile::getTileFromIndex(c);
 		}
 	}
 
@@ -50,14 +41,12 @@ void Map::load(const std::string& filename)
 	{
 		for (int j = 0; j < GRID_HEIGHT; ++j)
 		{
-			int tileNumber = static_cast<int>(m_tilesTypeGrid[i][j]);
-
 			if (getTileProperty(i, j) != Void)
 			{
-				m_vertices.append({ {i * TILE_SIZE, j * TILE_SIZE}, 				{tileNumber * TILE_SIZE, 0.f} });
-				m_vertices.append({ {(i + 1) * TILE_SIZE, j * TILE_SIZE}, 			{(tileNumber + 1) * TILE_SIZE, 0.f} });
-				m_vertices.append({ {(i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE},		{(tileNumber + 1) * TILE_SIZE, TILE_SIZE } });
-				m_vertices.append({ {i * TILE_SIZE, (j + 1) * TILE_SIZE}, 			{tileNumber * TILE_SIZE, TILE_SIZE} });
+				m_vertices.append({ {i * TILE_SIZE, j * TILE_SIZE}, 				m_grid[i][j].texturePosition });
+				m_vertices.append({ {(i + 1) * TILE_SIZE, j * TILE_SIZE}, 			{m_grid[i][j].texturePosition.x + TILE_SIZE, m_grid[i][j].texturePosition.y} });
+				m_vertices.append({ {(i + 1) * TILE_SIZE, (j + 1) * TILE_SIZE},		{m_grid[i][j].texturePosition.x + TILE_SIZE, m_grid[i][j].texturePosition.y + TILE_SIZE} });
+				m_vertices.append({ {i * TILE_SIZE, (j + 1) * TILE_SIZE}, 			{m_grid[i][j].texturePosition.x, m_grid[i][j].texturePosition.y + TILE_SIZE} });
 			}
 		}
 	}
@@ -77,7 +66,7 @@ void Map::load(const std::string& filename)
 TileProperty Map::getTileProperty(int x, int y) const
 {
 	if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-		return m_tilesPropertiesGrid[x][y];
+		return m_grid[x][y].property;
 	else
 	{
 		// std::cout << "undef ref at " << x << ";" << y << std::endl;

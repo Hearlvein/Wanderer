@@ -27,6 +27,5 @@ private:
 	int GRID_WIDTH = 0;
 	int GRID_HEIGHT = 0;
 	sf::VertexArray m_vertices;
-	std::vector< std::vector<TileType> > m_tilesTypeGrid;
-	std::vector< std::vector<TileProperty> > m_tilesPropertiesGrid;
+	std::vector< std::vector<Tile> > m_grid;
 };
