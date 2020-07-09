@@ -14,9 +14,10 @@ public:
 
 	virtual void update(float dt) = 0;
 	const sf::Vector2f& getPosition() const;
-	void setTextureRect(const sf::IntRect& textureRect, const sf::Vector2f* newHitboxSize = nullptr);
+	void setTextureRect(const sf::IntRect& textureRect, const Box* newHitbox = nullptr);
+	const sf::IntRect& getTextureRect() const;
 	void setTexture(const sf::Texture& texture);
-	virtual const Box& getCurrentHitbox() const;
+	virtual const Box& getHitbox() const;
 
 private:
 	friend class GameScene;

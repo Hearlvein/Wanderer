@@ -42,7 +42,7 @@ void SceneManager::run()
 		{
 			ImGui::SFML::ProcessEvent(event);
 
-			if (event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
 				m_window.close();
 			else
 				m_currentScene->handleEvent(event);

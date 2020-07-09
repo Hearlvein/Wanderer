@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cassert>
 #include <cmath>
 #include "Map.hpp"
 #include "Constants.hpp"
@@ -18,25 +19,49 @@ Map::~Map()
 void Map::load(const std::string& filename)
 {
 	std::ifstream file(filename.c_str());
-	file >> GRID_WIDTH;
-	file >> GRID_HEIGHT;
+	std::string line;
 
-	m_grid.resize(GRID_WIDTH);
-	for (int i = 0; i < GRID_WIDTH; ++i)
-		m_grid[i].resize(GRID_HEIGHT);
+	// used in nested loops
+	std::size_t i = 0;
+	std::size_t currentRowIndex = -1;
 
-	for (int i = 0; i < GRID_HEIGHT; ++i)
+	// checks for file corruption. -1 if not initalized. otherwise value shouldn't change below
+	int lineSize = -1;
+
+	while (std::getline(file, line))
 	{
-		for (int j = 0; j < GRID_WIDTH; ++j)
+		++currentRowIndex;	// counts number of rows
+
+		for (i = 0; i < line.size(); ++i)	// trim whitespaces
 		{
-			char c;
-			file >> c;
-			m_grid[j][i] = Tile::getTileFromIndex(c);
+			if (line[i] == ' ')
+				line.erase(i, 1);
+		}
+
+		if (lineSize == -1)	// set up GRID_WIDTH automatically from file
+		{
+			lineSize = line.size();	// new size, after trimming whitespaces
+			GRID_WIDTH = lineSize;
+			m_grid.resize(GRID_WIDTH);
+		}
+
+		// assertion failed if level file not properly set up
+		assert(lineSize == line.size());
+
+		// reads file data and sets up m_grid procedurally
+		for (i = 0; i < line.size(); ++i)
+		{
+			m_grid[i].reserve(currentRowIndex);
+			m_grid[i].push_back(Tile::getTileFromIndex(line[i]));
 		}
 	}
 
+	// At this state, currentRowIndex represents the maximum index, so the vertical size-1 of the grid
+	GRID_HEIGHT = currentRowIndex + 1;	// set up GRID_HEIGHT automatically from file
+
 	std::cout << GRID_WIDTH << "x" << GRID_HEIGHT << std::endl;
 
+	// creates an optimized (smaller than m_grid) vertex array
 	for (int i = 0; i < GRID_WIDTH; ++i)
 	{
 		for (int j = 0; j < GRID_HEIGHT; ++j)
@@ -58,8 +83,8 @@ void Map::load(const std::string& filename)
 	/*for (int i = 0; i < GRID_HEIGHT; ++i)
 	{
 		for (int j = 0; j < GRID_WIDTH; ++j)
-			std::cout << (int)m_tilesPropertiesGrid[j][i] << " ";
-		std::cout << std::endl;
+			std::cout << Tile::getPropertyCharIndexFromTile(m_grid[j][i]) << " ";
+		std::cout << "\n";
 	}*/
 }
 
@@ -69,25 +94,40 @@ TileProperty Map::getTileProperty(int x, int y) const
 		return m_grid[x][y].property;
 	else
 	{
-		// std::cout << "undef ref at " << x << ";" << y << std::endl;
+		//std::cout << "getTileProperty: undef ref at " << x << ";" << y << std::endl;
 		return Void;
 	}
 }
 
 bool Map::touchingTile(const Box& box, TileProperty tileProperty) const
 {
+	// Hypothetical values
 	int x_min = (int)std::floor(box.x / TILE_SIZE);
 	int y_min = (int)std::floor(box.y / TILE_SIZE);
 	int x_max = (int)std::ceil((box.x + box.w - 1) / TILE_SIZE);
 	int y_max = (int)std::ceil((box.y + box.h - 1) / TILE_SIZE);
 
+	// Smarting values
+	if (x_min < 0)				x_min = 0;
+	if (y_min < 0)				y_min = 0;
+	if (x_max > GRID_WIDTH)		x_max = GRID_WIDTH;
+	// commented to use virtual ground
+	//if (y_max > GRID_HEIGHT)	y_max = GRID_HEIGHT;
+
 	for (int i = x_min; i < x_max; ++i)
+	{
 		for (int j = y_min; j < y_max; ++j)
+		{
 			if (getTileProperty(i, j) == tileProperty)
-			{
-				//std::cout << "(" << i << ";" << j << ") returned is SolidBlock!" << std::endl;
 				return true;
-			}
+		}
+	}
+
+	if (y_max >= m_virtualGround)	// make the player unable to fall forever
+	{
+		std::cout << "Keeping the entity on a virtual ground" << std::endl;
+		return true;
+	}
 
 	return false;
 }
@@ -100,5 +140,5 @@ sf::Vector2f Map::getWorldSize() const
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	states.texture = m_texture;
-    target.draw(m_vertices, states);
+	target.draw(m_vertices, states);
 }

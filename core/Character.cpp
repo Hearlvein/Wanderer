@@ -1,11 +1,9 @@
-#include "Constants.hpp"
 #include "Character.hpp"
 #include "util.hpp"
 
 Character::Character()
 {
-    AnimatedGameObject::loadFromFile(animationsPath + "player.txt");
-    AnimatedGameObject::setCurrentAnimationName("right");
+    
 }
 
 Character::~Character()
@@ -24,25 +22,6 @@ void Character::update(float dt)
 
 	if (!isAlive())
 		std::cout << "character died" << std::endl;
-
-	MovingGameObject::update(dt);
-
-	// Link bases
-	if (m_yState == YState::Climbing)
-		AnimatedGameObject::setCurrentAnimationName("climbing");
-	else
-	{
-		if (m_facing == Direction::Right)
-			if (m_walkingState == WalkingState::Idle)
-				AnimatedGameObject::setCurrentAnimationName("idleRight");
-			else
-				AnimatedGameObject::setCurrentAnimationName("right");
-		else
-			if (m_walkingState == WalkingState::Idle)
-				AnimatedGameObject::setCurrentAnimationName("idleLeft");
-			else
-				AnimatedGameObject::setCurrentAnimationName("left");
-	}
 
 	AnimatedGameObject::increaseElapsedTime(dt);
 }

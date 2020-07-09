@@ -1,9 +1,8 @@
 #pragma once
 
-#include "MovingGameObject.hpp"
 #include "AnimatedGameObject.hpp"
 
-class Character : public MovingGameObject, public AnimatedGameObject
+class Character : public AnimatedGameObject
 {
 public:
 	Character();

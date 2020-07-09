@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 
+// Holds a single animation for an AnimatedGameObject
 class Animation
 {
 public:
@@ -50,17 +51,16 @@ public:
 		return toReturn;
 	}
 
-	// Access
-	// all data
+	// Getters for data
 	const std::string& getName() const { return m_name; }
 	std::size_t getCurrentFrameIndex() const { return m_currentFrameIndex; }
 	const std::vector<float>& getFrameDurations() const { return m_frameDurations; }
 	const std::vector<sf::IntRect>& getSubTextureCoords() const { return m_subTextureCoords; }
 	const std::vector<Box>& getHitboxCoords() const { return m_hitboxCoords; }
 
-	// current state
+	// Getters for state
 	const sf::IntRect& getCurrentSubTextureCoords() const { return m_subTextureCoords[m_currentFrameIndex]; }
-	const Box& getCurrentHitboxCoords() const { return m_hitboxCoords[m_currentFrameIndex]; }
+	const Box& getCurrentRelativeHitboxCoords() const { return m_hitboxCoords[m_currentFrameIndex]; }
 
 private:
 	friend class AnimatedGameObject;	// for easy properties access

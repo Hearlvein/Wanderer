@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Character.hpp"
+#include "MovingCharacter.hpp"
 
-class Enemy : public Character
+class Enemy : public MovingCharacter
 {
 public:
 	Enemy();

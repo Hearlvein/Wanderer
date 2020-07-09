@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-class AnimatedGameObject : virtual public GameObject
+class AnimatedGameObject : public virtual GameObject
 {
 public:
 	AnimatedGameObject()    // needs to be loaded with loadFromFile
@@ -79,9 +79,7 @@ public:
 					istringstream lineStream(line.substr(prefixes[5].size()));
 					float x, y, w, h;
 					while (lineStream >> x >> y >> w >> h)	// must be called 4 * m_frameCount times
-                    {
                         m_animations[currentAnimationName].m_hitboxCoords.push_back({ x, y, w, h });
-                    }
 				}
 			}
 
@@ -138,7 +136,7 @@ public:
             auto& newTextureRect = getCurrentTextureRect();
             /* std::cout << "new texture rect: " << newTextureRect.left << " " << newTextureRect.top << " " <<
                 newTextureRect.width << " " << newTextureRect.height << std::endl; */
-            sf::Vector2f newHitboxSize(_getCurrentHitbox().w, _getCurrentHitbox().h);
+            sf::Vector2f newHitboxSize(getRelativeHitbox().w, getRelativeHitbox().h);
             setTextureRect(newTextureRect/*, &newHitboxSize*/);
         }
 	}
@@ -148,9 +146,11 @@ public:
 		return m_animations.at(m_currentAnimationName).getCurrentSubTextureCoords();
 	}
 
-	const Box& _getCurrentHitbox() const
+	const Box& getRelativeHitbox() const
 	{
-		return m_animations.at(m_currentAnimationName).getCurrentHitboxCoords();
+		// hitbox position is relative to subTexture position. (position not included)
+		// {0, 0, .., ..}: hitbox has the same position than the subTexture
+		return m_animations.at(m_currentAnimationName).getCurrentRelativeHitboxCoords();
 	}
 
 private:

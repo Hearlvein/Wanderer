@@ -16,20 +16,30 @@ const sf::Vector2f& GameObject::getPosition() const
 	return m_sprite.getPosition();
 }
 
-void GameObject::setTextureRect(const sf::IntRect& textureRect, const sf::Vector2f* newHitboxSize)
+void GameObject::setTextureRect(const sf::IntRect& textureRect, const Box* newHitbox)
 {
 	m_sprite.setTextureRect(textureRect);
 
-	if (newHitboxSize)
+	// !: m_currentHitbox is absolute and newHitbox is not
+	if (newHitbox)
 	{
-		m_currentHitbox.w = newHitboxSize->x;
-		m_currentHitbox.h = newHitboxSize->y;
+		m_currentHitbox.x = getPosition().x + newHitbox->x;
+		m_currentHitbox.y = getPosition().y + newHitbox->y;
+		m_currentHitbox.w = newHitbox->w;
+		m_currentHitbox.h = newHitbox->h;
 	}
 	else
 	{
+		/*m_currentHitbox.x = getPosition().x;
+		m_currentHitbox.y = getPosition().y;*/
 		m_currentHitbox.w = static_cast<float>(textureRect.width);
 		m_currentHitbox.h = static_cast<float>(textureRect.height);
 	}
+}
+
+const sf::IntRect& GameObject::getTextureRect() const
+{
+	return m_sprite.getTextureRect();
 }
 
 void GameObject::setTexture(const sf::Texture& texture)
@@ -37,7 +47,7 @@ void GameObject::setTexture(const sf::Texture& texture)
 	m_sprite.setTexture(texture);
 }
 
-const Box& GameObject::getCurrentHitbox() const
+const Box& GameObject::getHitbox() const
 {
 	return m_currentHitbox;
 }

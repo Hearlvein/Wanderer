@@ -25,9 +25,21 @@ struct Tile
 		{
 			case '.': 	return Tile::s_Void;
 			case 'a': 	return Tile::s_Block1;
-			case 'b':		return Tile::s_Block2;
+			case 'b':	return Tile::s_Block2;
 			case 'l': 	return Tile::s_Ladder;
 			default:	return Tile::s_Ladder;
+		}
+	}
+
+	// Debugging purpose (printing map in console)
+	static char getPropertyCharIndexFromTile(const Tile& t)
+	{
+		switch (t.property)
+		{
+		case TileProperty::Void:	return '.';
+		case TileProperty::Solid:	return '#';
+		case TileProperty::Ladder:	return '|';
+		default:					return '?';
 		}
 	}
 };

@@ -28,4 +28,6 @@ private:
 	int GRID_HEIGHT = 0;
 	sf::VertexArray m_vertices;
 	std::vector< std::vector<Tile> > m_grid;
+
+	const int m_virtualGround = 60;	// player can't fall forever
 };

@@ -20,8 +20,8 @@ public:
 	virtual void update(float dt);
 	virtual void draw(sf::RenderTarget& target);
 
-	void moveEntity(MovingGameObject& entity, bool* xCollision = nullptr);
-	void updateClimbingState(MovingGameObject& entity);
+	void moveEntity(MovingCharacter& entity, bool* xCollision = nullptr);
+	void updateClimbingState(MovingCharacter& entity);
 	void moveEnemy(Enemy& enemy);
 	void moveCamera();
 

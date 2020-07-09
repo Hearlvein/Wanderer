@@ -1,8 +1,13 @@
 #include "Enemy.hpp"
+#include "Constants.hpp"
 
 Enemy::Enemy()
 {
+	AnimatedGameObject::loadFromFile(animationsPath + "enemy.txt");
+	AnimatedGameObject::setCurrentAnimationName("right");
+	setWalkingState(Beginning);
 
+	MovingCharacter::m_maxVelocityX = 200.0f;
 }
 
 Enemy::~Enemy()

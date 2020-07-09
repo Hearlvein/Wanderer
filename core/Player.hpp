@@ -1,14 +1,10 @@
 #pragma once
 
-#include "Character.hpp"
+#include "MovingCharacter.hpp"
 
-class Player : public Character
+class Player : public MovingCharacter
 {
 public:
 	Player();
 	virtual ~Player();
-
-private:
-	/*const std::string m_rightSeqName = "right";
-	const std::string m_leftSeqName = "left";*/
 };
