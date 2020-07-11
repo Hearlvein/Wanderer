@@ -1,10 +1,18 @@
 #pragma once
 
-#include "MovingCharacter.hpp"
+#include "Champion.hpp"
+#include "Constants.hpp"
 
-class Player : public MovingCharacter
+class Player : public Champion
 {
 public:
-	Player();
-	virtual ~Player();
+	Player()
+	{
+		AnimatedGameObject::loadFromFile(animationsPath + "player.txt");
+		AnimatedGameObject::setCurrentAnimationName("right");
+	}
+
+	virtual ~Player() {}
+
+	// virtual void update(float dt) override; // no need to overwrite for the moment
 };

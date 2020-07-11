@@ -1,6 +1,6 @@
 #pragma once
 
-enum WalkingState
+enum class WalkingState
 {
 	Idle, Beginning, Middle, End
 };
