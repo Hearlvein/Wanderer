@@ -25,5 +25,5 @@ hitboxCoords: 0 50 50 100
 -climbing
 frameCount: 1
 durations: 0.2
-subTextureCoords: 250 50 50 100
+subTextureCoords: 200 50 50 100
 hitboxCoords: 0 50 50 100

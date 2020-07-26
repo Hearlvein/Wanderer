@@ -14,7 +14,7 @@ void Champion::update(float dt)
 	
 	// Handling combat state
 	// converting seconds to milliseconds to keep floating type
-	float elapsedTime = m_combatTimer.getElapsedTime().asSeconds() / 1000.f;
+	float elapsedTime = m_combatTimer.getElapsedTime().asSeconds() * 1000.f;
 	switch(m_combatState)
 	{
 		case CombatState::Attacking:

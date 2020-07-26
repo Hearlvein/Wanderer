@@ -7,10 +7,9 @@
 
 SceneManager::SceneManager()
 {
-	// m_window.create({1800, 1000}, "Wanderer");
-	m_window.create(sf::VideoMode((unsigned int)SCREEN_WIDTH, (unsigned int)SCREEN_HEIGHT), "Wanderer");
-	m_window.setFramerateLimit(60);
-	// m_window.setVerticalSyncEnabled(true);
+	// m_window.create({1800, 1000}, "Wanderer");	// final size
+	m_window.create(sf::VideoMode((unsigned int)SCREEN_WIDTH, (unsigned int)SCREEN_HEIGHT), "Wanderer", sf::Style::Titlebar);
+	m_window.setVerticalSyncEnabled(true);
 
 	m_currentScene = new GameScene(&m_window);
 }

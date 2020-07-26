@@ -9,7 +9,6 @@ public:
 	virtual ~Enemy();
 
 	void toggleFacing();
-	
 };
 
 /*

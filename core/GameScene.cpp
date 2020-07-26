@@ -2,40 +2,31 @@
 #include <cmath>
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <functional>
 #include "GameScene.hpp"
 #include "Constants.hpp"
 #include "util.hpp"
 #include "debug.hpp"
 
 GameScene::GameScene(sf::RenderWindow* window)
-	: Scene(window), m_map(&m_texture)
+	: Scene(window)
 {
-	m_layers["backgroundLayer"].addObject(m_bgMgr.getDrawable());
+	// ------------------- textures -------------------
+	m_tileset.loadFromFile(texturesPath + "tileset.png");
+	m_backgroundTexture.loadFromFile(texturesPath + "background.png");
 
-	if (!m_texture.loadFromFile(texturesPath + "tileset.png"))
-		std::cout << "Tileset not loaded!" << std::endl;
-	m_texture.setSmooth(true);
-
-	m_map.load(levelsPath + "level.txt");
-	m_layers["mapLayer"].addObject(&m_map);
-
-	m_player.setTexture(m_texture);
-	m_player.setPosition(100.f, 50.f);
-	m_layers["playerLayer"].addObject(&m_player);
+	// ------------------- background -------------------
+	m_background.getSprite()->setTexture(m_backgroundTexture);
+	m_layers["backgroundLayer"].addObject(m_background.getDrawable());
 
 
-	for (std::size_t i = 0; i < 2; ++i)
+	// ------------------- map -------------------
+	m_map.setTexture(m_tileset);
+	m_map.load(levelsPath + "level.txt", [&](const std::string& n, const sf::Vector2f& p)
 	{
-		// Registers in enemy list
-		m_enemiesList.push_back(Enemy());
-		Enemy& enemy = m_enemiesList.back();
-
-		enemy.setTexture(m_texture);
-		enemy.setPosition(static_cast<float>(i + 1) * 500.f, 150.f);
-
-		// Registers in mobs layer
-		m_layers["mobsLayer"].addObject(&enemy);
-	}
+		addEntity(n, p);
+	});
+	m_layers["mapLayer"].addObject(&m_map);
 }
 
 GameScene::~GameScene()
@@ -45,43 +36,62 @@ GameScene::~GameScene()
 
 void GameScene::handleEvent(const sf::Event& event)
 {
-    if (event.type == sf::Event::Closed)
-    	m_window->close();
+	if (event.type == sf::Event::Closed)
+    {
+        if (m_mapEditor)
+            m_mapEditor->close();
+
+        m_window->close();
+    }
 }
 
 void GameScene::checkInput()
 {
+	// map editor
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+	{
+		if (m_mapEditor)
+			m_mapEditor.reset();
+		else
+			m_mapEditor = std::make_unique<MapEditor>(*m_window, m_map, m_tileset);
+
+		sf::sleep(sf::milliseconds(100));	// prevent spamming
+	}
+
+	if (m_mapEditor)
+		m_mapEditor->checkInput();
+
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-    {
-        m_player.setFacing(Direction::Right);
-        m_player.setWalkingState(WalkingState::Beginning);
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-    {
-    	m_player.setFacing(Direction::Left);
-        m_player.setWalkingState(WalkingState::Beginning);
-    }
-    else
-    	m_player.setWalkingState(WalkingState::End);
+	{
+		m_player.setFacing(Direction::Right);
+		m_player.setWalkingState(WalkingState::Beginning);
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	{
+		m_player.setFacing(Direction::Left);
+		m_player.setWalkingState(WalkingState::Beginning);
+	}
+	else
+		m_player.setWalkingState(WalkingState::End);
 
 
 	// Check for jump
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))	
-    	m_player.setYState(YState::Jumping);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		m_player.setYState(YState::Jumping);
 
 	// Check for ladder
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player.getHitbox(), Ladder))
-    {
-    	m_player.setYState(YState::Climbing);
-    	m_player.setClimbingDirection(Direction::Up);
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player.getHitbox(), Ladder))
-    {
-    	m_player.setYState(YState::Climbing);
-    	m_player.setClimbingDirection(Direction::Down);
-    }
-    else if (m_map.touchingTile(m_player.getHitbox(), Ladder))
-    	m_player.setClimbingDirection(Direction::None);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player.getHitbox(), Ladder))
+	{
+		m_player.setYState(YState::Climbing);
+		m_player.setClimbingDirection(Direction::Up);
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player.getHitbox(), Ladder))
+	{
+		m_player.setYState(YState::Climbing);
+		m_player.setClimbingDirection(Direction::Down);
+	}
+	else if (m_map.touchingTile(m_player.getHitbox(), Ladder))
+		m_player.setClimbingDirection(Direction::None);
 }
 
 void GameScene::update(float dt)
@@ -110,19 +120,41 @@ void GameScene::update(float dt)
 
 	// enemies update
 	for (auto& enemy : m_enemiesList)
-    {
-        enemy.update(dt);
-		// no updateClimbingState because entity can't climb ladders
-        moveEnemy(enemy);
-    }
+	{
+		enemy.update(dt);
+		// no updateClimbingState because entities can't climb ladders
+		moveEnemy(enemy);
+	}
 
-    moveCamera();
+	moveCamera();
 }
 
 void GameScene::updateClimbingState(MovingCharacter& entity)
 {
 	if (entity.getYState() == YState::Climbing && !m_map.touchingTile(m_player.getHitbox(), Ladder))
 		entity.setYState(YState::Falling);
+}
+
+void GameScene::addEntity(const std::string& name, const sf::Vector2f& position)
+{
+	if (name == "player")
+	{
+		m_player.setPosition(position.x, position.y);
+		m_player.setTexture(m_tileset);
+		m_layers["playerLayer"].addObject(&m_player);
+	}
+	else if (name == "enemy")
+	{
+		// Register in enemy list
+		m_enemiesList.push_back(Enemy());
+		Enemy& enemy = m_enemiesList.back();
+
+		enemy.setTexture(m_tileset);
+		enemy.setPosition(position.x, position.y);
+		m_layers["mobsLayer"].addObject(&enemy);
+	}
+	else
+		std::cerr << "!!! Calling placeEntity with name=" << name << "!!!" << std::endl;
 }
 
 void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
@@ -136,11 +168,11 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 	if (dy != 0.f)
 	{
 		if (std::abs(dy) >= TILE_SIZE)
-        {
-            //std::cout << "dy=" << dy;
+		{
+			//std::cout << "dy=" << dy;
 			dy = (TILE_SIZE - 1.f) * ((dy < 0) ? -1 : 1);	// maximum dy with care of sign
-            //std::cout << " -> " << dy << std::endl;
-        }
+			//std::cout << " -> " << dy << std::endl;
+		}
 
 		if (!m_map.touchingTile({hitbox.x, hitbox.y+dy, hitbox.w, hitbox.h}, Solid))
 			hitbox.y += dy;
@@ -153,8 +185,8 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 			}
 			else if (entity.getYState() == YState::Jumping)
 			{
-                //std::cout << "block ahead keeping from jumping higher" << std::endl;
-                entity.setYState(YState::Falling);
+				//std::cout << "block ahead keeping from jumping higher" << std::endl;
+				entity.setYState(YState::Falling);
 			}
 		}
 	}
@@ -163,13 +195,13 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 	if (dx != 0.f)
 	{
 		if (std::abs(dx) >= TILE_SIZE)
-        {
-            //std::cout << "dx=" << dx;
-            dx = (TILE_SIZE - 1.f) * ((dx < 0) ? -1 : 1);	// maximum dx with care of sign
-            //std::cout << " -> " << dx << std::endl;
-        }
+		{
+			//std::cout << "dx=" << dx;
+			dx = (TILE_SIZE - 1.f) * ((dx < 0) ? -1 : 1);	// maximum dx with care of sign
+			//std::cout << " -> " << dx << std::endl;
+		}
 
-        if (!m_map.touchingTile({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}, Solid))
+		if (!m_map.touchingTile({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}, Solid))
 			hitbox.x += dx;
 		else
 		{
@@ -179,7 +211,7 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 				hitbox.x = std::floor(hitbox.x / TILE_SIZE) * TILE_SIZE;
 
 			if (xCollision)
-                *xCollision = true;
+				*xCollision = true;
 		}
 
 		if (entity.getYState() == YState::Grounded && !m_map.touchingTile({ hitbox.x, hitbox.y + 2.f, hitbox.w, hitbox.h }, Solid))
@@ -209,7 +241,7 @@ void GameScene::moveCamera()
 	// if (distance(vecCenter) > m_screenPadding)
 	// {
 		currentView.move(vecCenter);
-		m_bgMgr.update(currentView.getCenter() - m_window->getView().getCenter());
+		m_background.update(currentView.getCenter() - m_window->getView().getCenter());
 		m_window->setView(currentView);
 
 	// }
@@ -217,11 +249,14 @@ void GameScene::moveCamera()
 
 void GameScene::draw(sf::RenderTarget& target)
 {
-    target.draw(m_layers["backgroundLayer"]);
-    target.draw(m_layers["mapLayer"]);
-    target.draw(m_layers["mobsLayer"]);
-    target.draw(m_layers["playerLayer"]);
+	target.draw(m_layers["backgroundLayer"]);
+	target.draw(m_layers["mapLayer"]);
+	target.draw(m_layers["mobsLayer"]);
+	target.draw(m_layers["playerLayer"]);
 
-    if (m_imguiEnabled)
-    	ImGui::Text("Frame took %f FPS=%f", m_lastDt, 1 / m_lastDt);
+	if (m_mapEditor)
+		m_mapEditor->render();
+
+	if (m_imguiEnabled)
+		ImGui::Text("Frame took %f FPS=%f", m_lastDt * 1000.f, 1 / m_lastDt);
 }

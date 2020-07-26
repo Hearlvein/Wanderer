@@ -19,7 +19,7 @@ struct Tile
 	static const Tile s_Block2;
 	static const Tile s_Ladder;
 
-	static Tile getTileFromIndex(char i)
+	static const Tile& getTileFromIndex(char i)
 	{
 		switch (i)
 		{

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "CombatSystemHandler.hpp"
 #include "CombatState.hpp"
 #include "AttackingState.hpp"
@@ -17,11 +15,11 @@ void CombatSystemHandler::update(float dt)
                 ch2->m_attackingState == AttackingState::End &&
                 boxesOverlapping(ch1->getHitbox(), ch2->getCurrentWeapon().hitbox) &&
                 ch2->m_attackSucceed == false) //Checking if is hit by other characters
-            { 
+            {
                 ch1->takeDamage(ch2->getCurrentWeapon().damage);
                 ch2->m_attackSucceed = true;
             }
-             
+
             if (ch1->m_combatState == CombatState::Attacking  &&
                 ch1->m_attackingState == AttackingState::Parry &&
                 boxesOverlapping(ch1->getCurrentWeapon().hitbox, ch2->getCurrentWeapon().hitbox) &&

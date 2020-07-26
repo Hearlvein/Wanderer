@@ -20,8 +20,8 @@ void Character::update(float dt)
 			setIsInvicible(false);
 	}
 
-	if (!isAlive())
-		std::cout << "character died" << std::endl;
+	/*if (!isAlive())
+		std::cout << "character died" << std::endl;*/
 
 	AnimatedGameObject::increaseElapsedTime(dt);
 }
