@@ -6,11 +6,6 @@
 
 class Map;
 
-struct TileData
-{
-	sf::Sprite sprite;
-};
-
 class MapEditor
 {
 public:
@@ -48,7 +43,7 @@ public:
 
 	void checkInput()
 	{
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_editTimer.getElapsedTime() > sf::milliseconds(100))
 		{
 			// in tiles window?
 			sf::Vector2i mouseInTilesWindow = sf::Mouse::getPosition(m_tilesWindow);
@@ -86,11 +81,9 @@ public:
 				// std::cout << "mouseTileCoords: " << mouseTileCoords.x << ";" << mouseTileCoords.y << std::endl;
 
 				m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, Tile::getTileFromIndex(m_selectedCharIndex));
-
-				sf::sleep(sf::milliseconds(100));	// TODO: remove
-
-				return;
 			}
+
+			m_editTimer.restart();
 		}
 	}
 
@@ -111,4 +104,5 @@ private:
 	std::map<char, sf::Sprite> m_tilesSprites;
 
 	char m_selectedCharIndex = '.';
+	sf::Clock m_editTimer;	// prevent from spamming
 };

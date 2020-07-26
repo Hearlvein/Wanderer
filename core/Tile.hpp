@@ -11,7 +11,7 @@ enum TileProperty
 
 struct Tile
 {
-	sf::Vector2f texturePosition;
+	sf::Vector2f texCoords;
 	TileProperty property = Ladder;
 
 	static const Tile s_Void;

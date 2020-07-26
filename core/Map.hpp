@@ -11,7 +11,7 @@
 class Map : public sf::Drawable
 {
 public:
-	Map() { m_vertices.setPrimitiveType(sf::Quads); }
+	Map() {}
 	virtual ~Map() {}
 
 	void setTexture(const sf::Texture& texture) { m_texture = &texture; }
@@ -25,6 +25,8 @@ public:
 	sf::Vector2f getWorldSize() const;
 
 private:
+	/** heavy internal method called everytime grid is modified **/
+	void regenerateVertices();
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 	const sf::Texture* m_texture = nullptr;
@@ -32,10 +34,7 @@ private:
 	int GRID_HEIGHT = 0;
 	std::vector< std::vector<Tile> > m_grid;
 
-	// Holds an index for every cell of the grid which represents their vertices (in m_vertices)
-	// Used to modify m_vertices and add/delete new vertices 
-	std::vector< std::vector<std::size_t> > m_ptrGridVertices;
-	sf::VertexArray m_vertices;
+	std::vector<sf::Vertex> m_vertices;
 
 	const int m_virtualGround = 60;	// player can't fall forever
 };
