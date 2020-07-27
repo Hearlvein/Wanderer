@@ -1,0 +1,6 @@
+- add tiles outside of grid dimensions (done of x >= GRID_WIDTH)
+- anti spam with sf::Clock
+- add entity placement editor	...
+- tilesWindow visibility (ImGUI?)
+- reduce GRID_WIDTH when deleting single non-void from the last column
+- maybe use std::list to store vertices to not invalidate pointers and avoid regenerateVertices()?

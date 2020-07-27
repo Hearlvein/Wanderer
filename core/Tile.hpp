@@ -32,6 +32,7 @@ struct Tile
 	}
 
 	// Debugging purpose (printing map in console)
+	// TODO: remove
 	static char getPropertyCharIndexFromTile(const Tile& t)
 	{
 		switch (t.property)

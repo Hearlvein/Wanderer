@@ -53,7 +53,11 @@ void GameScene::checkInput()
 		if (m_mapEditor)
 			m_mapEditor.reset();
 		else
-			m_mapEditor = std::make_unique<MapEditor>(*m_window, m_map, m_tileset);
+			m_mapEditor = std::make_unique<MapEditor>(
+                *m_window,
+                m_map,
+                std::map<char, const GameObject&>{ {'p', m_player} },
+                m_tileset);
 
 		sf::sleep(sf::milliseconds(100));	// prevent spamming
 	}

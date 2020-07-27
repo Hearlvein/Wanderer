@@ -56,12 +56,14 @@ void Map::load(const std::string& filename,
                 c = '.';
             }
 
-            m_grid[i].push_back(Tile::getTileFromIndex(c)); // note that c could be modified above
+            m_grid[i].emplace_back(c); // note that c could be modified above
         }
     }
 
     // At this state, currentRowIndex represents the maximum index, so the vertical size-1 of the grid
     GRID_HEIGHT = currentRowIndex + 1;  // set up GRID_HEIGHT automatically from file
+
+    m_virtualGround = GRID_HEIGHT+2;
 
     std::cout << GRID_WIDTH << "x" << GRID_HEIGHT << std::endl;
 
@@ -80,34 +82,62 @@ void Map::load(const std::string& filename,
     }*/
 }
 
-void Map::setTile(int x, int y, const Tile& tile)
+void Map::setTile(int x, int y, char index, bool force)
 {
     if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
     {
-        Tile& gTile = m_grid[x][y];
+        char& gIndex = m_grid[x][y];
 
         // testing property first for optimization
-        if (gTile.property == tile.property && gTile.texCoords == tile.texCoords)   // same tile
+        if (gIndex == index)   // same tile
             return;
 
-        gTile = tile;
+        gIndex = index;
         regenerateVertices();
 
         std::cout << "vertex array size: " << m_vertices.size() << std::endl;
+    }
+    else if (force && index != '.' && x >= 0 && y >= 0 && y < GRID_HEIGHT)
+    {
+        int offset = x - GRID_WIDTH + 1;
+        int newGridWidth = GRID_WIDTH + offset;
+        std::cout << "GRID_WIDTH: " << GRID_WIDTH << " -> " << GRID_WIDTH+offset << std::endl;
+
+        m_grid.reserve(newGridWidth);
+        for (int i = GRID_WIDTH; i < newGridWidth; ++i)
+            m_grid.emplace_back(GRID_HEIGHT, '.');   // vector ctor args
+
+        GRID_WIDTH = newGridWidth;
+
+        m_grid[x][y] = index;
+        regenerateVertices();
     }
     else
         std::cerr << "setTileProperty: undef ref at " << x << ";" << y << std::endl;
 }
 
-TileProperty Map::getTileProperty(int x, int y) const
+char Map::getTileIndex(int x, int y) const
 {
     if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-        return m_grid[x][y].property;
+        return m_grid[x][y];
+    else
+        return '?';
+}
+
+const Tile& Map::getTile(int x, int y) const
+{
+    if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
+        return Tile::getTileFromIndex(m_grid[x][y]);
     else
     {
         //std::cout << "getTileProperty: undef ref at " << x << ";" << y << std::endl;
-        return Void;
+        return Tile::s_Void;
     }
+}
+
+TileProperty Map::getTileProperty(int x, int y) const
+{
+    return getTile(x, y).property;
 }
 
 bool Map::touchingTile(const Box& box, TileProperty tileProperty) const
@@ -161,7 +191,7 @@ void Map::regenerateVertices()
             if (getTileProperty(i, j) != Void)  // reduce vertices number
             {
                 // set position & texture coords
-                sf::Vector2f& texCoords = m_grid[i][j].texCoords;   // for read-ability
+                auto& texCoords = getTile(i, j).texCoords;   // for read-ability
 
                 m_vertices.emplace_back(sf::Vector2f( i * TILE_SIZE,       j * TILE_SIZE     ), texCoords                                                     );
                 m_vertices.emplace_back(sf::Vector2f((i + 1) * TILE_SIZE,  j * TILE_SIZE     ), sf::Vector2f(texCoords.x + TILE_SIZE, texCoords.y            ));
