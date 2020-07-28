@@ -27,6 +27,13 @@ GameScene::GameScene(sf::RenderWindow* window)
 		addEntity(n, p);
 	});
 	m_layers["mapLayer"].addObject(&m_map);
+
+	// debug purpose
+	m_mapEditor = std::make_unique<MapEditor>(
+                *m_window,
+                m_map,
+                std::map<char, const GameObject&>{ {'p', m_player} },
+                m_tileset);
 }
 
 GameScene::~GameScene()

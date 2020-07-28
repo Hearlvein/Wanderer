@@ -18,7 +18,7 @@ public:
 	void load(const std::string& filename,
 		const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity);
 
-	void setTile(int x, int y, char index, bool force = false);
+	void setTile(int x, int y, char index);
 	char getTileIndex(int x, int y) const;
 	const Tile& getTile(int x, int y) const;    // get tile from index
 	TileProperty getTileProperty(int x, int y) const;

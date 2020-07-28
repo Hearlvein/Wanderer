@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <cassert>
 #include <fstream>
@@ -82,22 +83,9 @@ void Map::load(const std::string& filename,
     }*/
 }
 
-void Map::setTile(int x, int y, char index, bool force)
+void Map::setTile(int x, int y, char index)
 {
-    if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-    {
-        char& gIndex = m_grid[x][y];
-
-        // testing property first for optimization
-        if (gIndex == index)   // same tile
-            return;
-
-        gIndex = index;
-        regenerateVertices();
-
-        std::cout << "vertex array size: " << m_vertices.size() << std::endl;
-    }
-    else if (force && index != '.' && x >= 0 && y >= 0 && y < GRID_HEIGHT)
+    if (index != '.' && x >= GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)  // increase GRID_WIDTH (adding right)
     {
         int offset = x - GRID_WIDTH + 1;
         int newGridWidth = GRID_WIDTH + offset;
@@ -112,8 +100,37 @@ void Map::setTile(int x, int y, char index, bool force)
         m_grid[x][y] = index;
         regenerateVertices();
     }
+    else if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
+    {
+        char& gIndex = m_grid[x][y];
+
+        // testing property first for optimization
+        if (gIndex == index)   // same tile
+            return;
+
+        gIndex = index;
+
+        if (gIndex == '.')
+        {
+            auto countVoid = [&]() { return std::count(m_grid.back().begin(), m_grid.back().end(), '.'); };
+
+            int count = countVoid();
+            while (count == GRID_HEIGHT)
+            {
+                m_grid.pop_back();
+                std::cout << "GRID_WIDTH: " << GRID_WIDTH << " -> " << GRID_WIDTH-1 << std::endl;
+                --GRID_WIDTH;
+                count = countVoid();
+            }
+        }
+
+        regenerateVertices();
+
+        std::cout << "vertex array size: " << m_vertices.size() << std::endl;
+    }
+
     else
-        std::cerr << "setTileProperty: undef ref at " << x << ";" << y << std::endl;
+        std::cerr << "setTile: undef ref at " << x << ";" << y << std::endl;
 }
 
 char Map::getTileIndex(int x, int y) const

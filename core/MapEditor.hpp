@@ -83,7 +83,7 @@ public:
 				};
 				// std::cout << "mouseTileCoords: " << mouseTileCoords.x << ";" << mouseTileCoords.y << std::endl;
 
-				m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, m_selectedCharIndex, true);
+				m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, m_selectedCharIndex);
 			}
 
 			m_editTimer.restart();
