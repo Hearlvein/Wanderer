@@ -4,3 +4,8 @@
 - tilesWindow visibility (ImGUI?)
 - reduce GRID_WIDTH when deleting single non-void from the last column
 - maybe use std::list to store vertices to not invalidate pointers and avoid regenerateVertices()?
+- change order setTile + recursvity:
+	- everything right
+	- x and y wrong
+	- only x wrong
+	- only y wrong

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <fstream>
 #include <chrono>
 
@@ -19,10 +20,10 @@ struct DebugTimer
 	std::chrono::time_point<std::chrono::high_resolution_clock> start;
 };
 
-#ifdef __FUNSIG__
-#define LINE_TRACK logFile << __FUNCSIG__ << " (line " << __LINE__ << ")\n" << std::flush;
+#ifdef __PRETTY_FUNCTION__
+#define L std::cerr << __PRETTY_FUNCTION__ << " (line " << __LINE__ << ")\n" << std::flush;
 #else
-#define LINE_TRACK logFile << __PRETTY_FUNCTION__ << " (line " << __LINE__ << ")\n" << std::flush;
+#define L std::cerr << __FUNCSIG__ << " (line " << __LINE__ << ")\n" << std::flush;
 #endif
 
 #define DEBUG_FC DebugTimer timer;

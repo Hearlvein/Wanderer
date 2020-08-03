@@ -18,7 +18,16 @@ public:
 	void load(const std::string& filename,
 		const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity);
 
-	void setTile(int x, int y, char index);
+	void setTile(int x, int y, char index, bool* frontModifications = nullptr);
+	void addRows(std::size_t n);
+	void addCols(std::size_t n);
+	bool deleteEmptyRowsTop();
+	void deleteEmptyRowsDown();
+	void deleteEmptyColsRight();
+	bool deleteEmptyColsLeft();
+	void moveDown(std::size_t number);
+	void moveRight(std::size_t number);
+
 	char getTileIndex(int x, int y) const;
 	const Tile& getTile(int x, int y) const;    // get tile from index
 	TileProperty getTileProperty(int x, int y) const;
@@ -28,7 +37,7 @@ public:
 
 private:
 	friend class MapEditor;
-	
+
 	/** heavy internal method called everytime grid is modified **/
 	void regenerateVertices();
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
@@ -36,6 +45,7 @@ private:
 	const sf::Texture* m_texture = nullptr;
 	int GRID_WIDTH = 0;
 	int GRID_HEIGHT = 0;
+	const sf::Vector2i m_minimumGridSize { 3, 3 };
 	std::vector< std::vector<char> > m_grid;	// nows only stores indexes (more precise)
 
 	std::vector<sf::Vertex> m_vertices;

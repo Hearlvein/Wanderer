@@ -1,55 +1,103 @@
-#include <iostream>
-#include <cmath>
-#include <imgui-SFML.h>
-#include <imgui.h>
-#include <functional>
+#include "MapEditor.hpp"
 #include "GameScene.hpp"
 #include "Constants.hpp"
 #include "util.hpp"
 #include "debug.hpp"
 
+#include <functional>
+#include <iostream>
+#include <cassert>
+#include <cmath>
+
+#include <imgui-SFML.h>
+#include <imgui.h>
+
 GameScene::GameScene(sf::RenderWindow* window)
 	: Scene(window)
 {
-	// ------------------- textures -------------------
+	// ------------------- textures (resource: loaded once) -------------------
 	m_tileset.loadFromFile(texturesPath + "tileset.png");
 	m_backgroundTexture.loadFromFile(texturesPath + "background.png");
 
-	// ------------------- background -------------------
+	load();	// load map and entities
+
+	// player must be registered
+	assert(m_player != nullptr);
+
+	// TODO: debug purpose
+	m_mapEditor = new MapEditor(*this);
+}
+
+GameScene::~GameScene()
+{
+	if (m_mapEditor)
+		delete m_mapEditor;
+
+	destroyEntities();
+}
+
+void GameScene::load()
+{
+	// reset
+	m_layers["backgroundLayer"].clear();
+	m_layers["mapLayer"].clear();
+	m_layers["mobsLayer"].clear();
+	m_layers["playerLayer"].clear();
+	destroyEntities();
+	// TODO: dirty: can't reset position because background changed as the player is (initially) centered (moveCamera)
+	// m_background.resetPosition();
+
+	// intialize
+
+	// background
 	m_background.getSprite()->setTexture(m_backgroundTexture);
 	m_layers["backgroundLayer"].addObject(m_background.getDrawable());
 
-
-	// ------------------- map -------------------
+	// map & entities
 	m_map.setTexture(m_tileset);
 	m_map.load(levelsPath + "level.txt", [&](const std::string& n, const sf::Vector2f& p)
 	{
 		addEntity(n, p);
 	});
 	m_layers["mapLayer"].addObject(&m_map);
-
-	// debug purpose
-	m_mapEditor = std::make_unique<MapEditor>(
-                *m_window,
-                m_map,
-                std::map<char, const GameObject&>{ {'p', m_player} },
-                m_tileset);
 }
 
-GameScene::~GameScene()
+void GameScene::destroyEntities()
 {
+	m_player = nullptr;
+	m_enemies.clear();
 
+	while (!m_entities.empty())
+	{
+		delete m_entities.back();
+		m_entities.pop_back();
+	}
 }
 
 void GameScene::handleEvent(const sf::Event& event)
 {
 	if (event.type == sf::Event::Closed)
-    {
-        if (m_mapEditor)
-            m_mapEditor->close();
+	{
+		if (m_mapEditor)
+			m_mapEditor->close();
 
-        m_window->close();
-    }
+		m_window->close();
+
+		return;
+	}
+
+	// Mouse coordinates in world coordinates
+	else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W)
+	{
+		auto mousePosition = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
+		std::cout << "mouse position: " << mousePosition.x << " ; " << mousePosition.y << std::endl;
+	}
+	
+
+	if (m_mapEditor)
+	{
+		m_mapEditor->handleMapWindowEvent(event);
+	}
 }
 
 void GameScene::checkInput()
@@ -58,51 +106,53 @@ void GameScene::checkInput()
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 	{
 		if (m_mapEditor)
-			m_mapEditor.reset();
+		{
+			delete m_mapEditor;
+			m_mapEditor = nullptr;
+		}
 		else
-			m_mapEditor = std::make_unique<MapEditor>(
-                *m_window,
-                m_map,
-                std::map<char, const GameObject&>{ {'p', m_player} },
-                m_tileset);
+			m_mapEditor = new MapEditor(*this);
 
 		sf::sleep(sf::milliseconds(100));	// prevent spamming
 	}
 
 	if (m_mapEditor)
-		m_mapEditor->checkInput();
+	{
+		m_mapEditor->handleTilesWindowEvents();	// TODO: need a place to call this
+		m_mapEditor->handleInputs();
+	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
-		m_player.setFacing(Direction::Right);
-		m_player.setWalkingState(WalkingState::Beginning);
+		m_player->setFacing(Direction::Right);
+		m_player->setWalkingState(WalkingState::Beginning);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
-		m_player.setFacing(Direction::Left);
-		m_player.setWalkingState(WalkingState::Beginning);
+		m_player->setFacing(Direction::Left);
+		m_player->setWalkingState(WalkingState::Beginning);
 	}
 	else
-		m_player.setWalkingState(WalkingState::End);
+		m_player->setWalkingState(WalkingState::End);
 
 
 	// Check for jump
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-		m_player.setYState(YState::Jumping);
+		m_player->setYState(YState::Jumping);
 
 	// Check for ladder
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player.getHitbox(), Ladder))
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player->getHitbox(), Ladder))
 	{
-		m_player.setYState(YState::Climbing);
-		m_player.setClimbingDirection(Direction::Up);
+		m_player->setYState(YState::Climbing);
+		m_player->setClimbingDirection(Direction::Up);
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player.getHitbox(), Ladder))
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player->getHitbox(), Ladder))
 	{
-		m_player.setYState(YState::Climbing);
-		m_player.setClimbingDirection(Direction::Down);
+		m_player->setYState(YState::Climbing);
+		m_player->setClimbingDirection(Direction::Down);
 	}
-	else if (m_map.touchingTile(m_player.getHitbox(), Ladder))
-		m_player.setClimbingDirection(Direction::None);
+	else if (m_map.touchingTile(m_player->getHitbox(), Ladder))
+		m_player->setClimbingDirection(Direction::None);
 }
 
 void GameScene::update(float dt)
@@ -110,31 +160,31 @@ void GameScene::update(float dt)
 	m_lastDt = dt;
 
 	// Enemy collision
-	if (!m_player.isInvicible())
+	if (!m_player->isInvicible())
 	{
-		for (auto enemyIt = m_enemiesList.begin(); enemyIt != m_enemiesList.end(); ++enemyIt)
+		for (auto enemy : m_enemies)
 		{
-			if (boxesOverlapping(enemyIt->getHitbox(), m_player.getHitbox()))
+			if (boxesOverlapping(enemy->getHitbox(), m_player->getHitbox()))
 			{
-				m_player.takeDamage(20);
-				m_player.setIsInvicible(true, 2.f);
+				m_player->takeDamage(20);
+				m_player->setIsInvicible(true, 2.f);
 			}
 		}
 	}
 
 	// internal player update
-	m_player.update(dt);
+	m_player->update(dt);
 
 	// external player update
-	updateClimbingState(m_player);
-	moveEntity(m_player);
+	updateClimbingState(*m_player);
+	moveEntity(*m_player);
 
 	// enemies update
-	for (auto& enemy : m_enemiesList)
+	for (auto enemy : m_enemies)
 	{
-		enemy.update(dt);
+		enemy->update(dt);
 		// no updateClimbingState because entities can't climb ladders
-		moveEnemy(enemy);
+		moveEnemy(*enemy);
 	}
 
 	moveCamera();
@@ -142,7 +192,7 @@ void GameScene::update(float dt)
 
 void GameScene::updateClimbingState(MovingCharacter& entity)
 {
-	if (entity.getYState() == YState::Climbing && !m_map.touchingTile(m_player.getHitbox(), Ladder))
+	if (entity.getYState() == YState::Climbing && !m_map.touchingTile(m_player->getHitbox(), Ladder))
 		entity.setYState(YState::Falling);
 }
 
@@ -150,19 +200,24 @@ void GameScene::addEntity(const std::string& name, const sf::Vector2f& position)
 {
 	if (name == "player")
 	{
-		m_player.setPosition(position.x, position.y);
-		m_player.setTexture(m_tileset);
-		m_layers["playerLayer"].addObject(&m_player);
+		// Allocation
+		m_player = new Player();
+		m_entities.push_front(m_player);
+
+		m_player->setPosition(position.x, position.y);
+		m_player->setTexture(m_tileset);
+		m_layers["playerLayer"].addObject(m_player);
 	}
 	else if (name == "enemy")
 	{
-		// Register in enemy list
-		m_enemiesList.push_back(Enemy());
-		Enemy& enemy = m_enemiesList.back();
+		// Allocation
+		Enemy* enemy = new Enemy();
+		m_enemies.push_back(enemy);
+		m_entities.push_back(enemy);
 
-		enemy.setTexture(m_tileset);
-		enemy.setPosition(position.x, position.y);
-		m_layers["mobsLayer"].addObject(&enemy);
+		enemy->setTexture(m_tileset);
+		enemy->setPosition(position.x, position.y);
+		m_layers["mobsLayer"].addObject(enemy);
 	}
 	else
 		std::cerr << "!!! Calling placeEntity with name=" << name << "!!!" << std::endl;
@@ -247,12 +302,14 @@ void GameScene::moveCamera()
 {
 	sf::View currentView = m_window->getView();
 
-	sf::Vector2f playerCenter(m_player.getPosition().x + m_player.getCurrentTextureRect().width / 2, m_player.getPosition().y + m_player.getCurrentTextureRect().height / 2);
+	auto& playerBox = m_player->getHitbox();
+	sf::Vector2f playerCenter(playerBox.x + playerBox.w / 2, playerBox.y + playerBox.h / 2);
 	sf::Vector2f vecCenter = playerCenter - currentView.getCenter();
+
 	// if (distance(vecCenter) > m_screenPadding)
 	// {
 		currentView.move(vecCenter);
-		m_background.update(currentView.getCenter() - m_window->getView().getCenter());
+		m_background.move(currentView.getCenter() - m_window->getView().getCenter());
 		m_window->setView(currentView);
 
 	// }

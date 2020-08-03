@@ -3,12 +3,12 @@
 
 GameObject::GameObject()
 {
-
+	std::cout << "Creating a GameObject (" << this << ")" << std::endl;
 }
 
 GameObject::~GameObject()
 {
-
+	std::cout << "Destroying  a GameObject (" << this << ")" << std::endl;
 }
 
 const sf::Vector2f& GameObject::getPosition() const
@@ -58,6 +58,11 @@ void GameObject::setPosition(float x, float y)
 	m_currentHitbox.y = y;
 
 	m_sprite.setPosition(x, y);
+}
+
+void GameObject::setPosition(const sf::Vector2f& pos)
+{
+	setPosition(pos.x, pos.y);
 }
 
 void GameObject::setSize(float x, float y)

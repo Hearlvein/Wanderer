@@ -9,6 +9,7 @@ public:
 	Layer();
 	virtual ~Layer();
 
+	void clear();
 	void addObject(const sf::Drawable* drawable);
 
 private:
