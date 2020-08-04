@@ -78,10 +78,10 @@ void Map::load(const std::string& filename,
 	regenerateVertices();
 
 	std::cout << "grid size: " << GRID_WIDTH * GRID_HEIGHT << std::endl;
-	std::cout << "vertex array size: " << m_vertices.size() << std::endl;
+	// std::cout << "vertex array size: " << m_vertices.size() << std::endl;
 }
 
-void Map::setTile(int x, int y, char index, bool* frontModification)
+void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 {
 	if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) // no increase, maybe decrease
 	{
@@ -95,25 +95,19 @@ void Map::setTile(int x, int y, char index, bool* frontModification)
 
 		if (gIndex == '.')  // try to reduce on deletion
 		{
-			// Becareful functions: move entities and cam
+			// ----- Becareful functions: move entities and cam -----
+			*newColLeft = removeEmptyColsLeft();
+			*newRowTop = removeEmptyRowsTop();
+			// ------------------------------------------------------
 
-			// TODO: so dirty design!
-			*frontModification = deleteEmptyColsLeft();
-			// if frontModification exists, it is already initialized to true or false
 
-			if (!(*frontModification))
-				*frontModification = deleteEmptyRowsTop();
-			else
-				deleteEmptyRowsTop();
-			// --------------------
-
-			deleteEmptyColsRight();
-			deleteEmptyRowsDown();
+			removeEmptyColsRight();
+			removeEmptyRowsBottom();
 		}
 
 		regenerateVertices();
 
-		std::cout << "vertex array size: " << m_vertices.size() << std::endl;
+		// std::cout << "vertex array size: " << m_vertices.size() << std::endl;
 	}
 	else if (index != '.')  // modify grid dimensions
 	{
@@ -122,8 +116,8 @@ void Map::setTile(int x, int y, char index, bool* frontModification)
 		{
 			std::cout << "adding bottom right" << std::endl;
 
-			addCols(x - GRID_WIDTH + 1);
-			addRows(y - GRID_HEIGHT + 1);
+			addColsRight(x - GRID_WIDTH + 1);
+			addRowsBottom(y - GRID_HEIGHT + 1);
 
 			setTile(0, 0, index);
 		}
@@ -134,7 +128,7 @@ void Map::setTile(int x, int y, char index, bool* frontModification)
 			std::cout << "adding bottom only" << std::endl;
 
 			// need to add more rows
-			addRows(y - GRID_HEIGHT + 1);
+			addRowsBottom(y - GRID_HEIGHT + 1);
 
 			setTile(x, y, index);
 		}
@@ -145,7 +139,7 @@ void Map::setTile(int x, int y, char index, bool* frontModification)
 			std::cout << "adding right only" << std::endl;
 
 			// need to add more cols
-			addCols(x - GRID_WIDTH + 1);
+			addColsRight(x - GRID_WIDTH + 1);
 
 			setTile(x, y, index);
 		}
@@ -155,44 +149,74 @@ void Map::setTile(int x, int y, char index, bool* frontModification)
 		{
 			std::cout << "adding top-left" << std::endl;
 
-			*frontModification = true;
+			*newRowTop = true;
+			*newColLeft = true;
 
-			moveRight(-x);
-			moveDown(-y);
+			addColsLeft(-x);
+			addRowsTop(-y);
 
 			setTile(0, 0, index);
 		}
 
-		// Adding top
+		// Adding top only
 		else if (x >= 0 && x < GRID_WIDTH && y < 0)
 		{
 			std::cout << "adding top only" << std::endl;
 
-			*frontModification = true;
+			*newRowTop = true;
 
-			moveDown(-y);
+			addRowsTop(-y);
 
 			setTile(x, 0, index);
 		}
 
-		// Adding left
+		// Adding left only
 		else if (x < 0 && y >= 0 && y < GRID_HEIGHT)
 		{
 			std::cout << "adding left only" << std::endl;
 
-			*frontModification = true;
+			*newColLeft = true;
 
-			moveRight(-x);
+			addColsLeft(-x);
 
 			setTile(0, y, index);
 		}
+
+		// Adding top-right
+		else if (x >= GRID_WIDTH && y < 0)
+		{
+			std::cout << "Adding top right" << std::endl;
+
+			*newRowTop = true;
+
+			addRowsTop(-y);
+			addColsRight(x - GRID_WIDTH + 1);
+
+			setTile(x, 0, index);
+		}
+
+		// Adding bottom-left
+		else if (x < 0 && y >= GRID_HEIGHT)
+		{
+			std::cout << "Adding bottom-left" << std::endl;
+
+			*newColLeft = true;
+
+			addColsLeft(-x);
+			addRowsBottom(y - GRID_HEIGHT + 1);
+
+			setTile(0, y, index);
+		}
+
+		else
+			std::cerr << "unhandled insertion: (x=" << x << "; y=" << y << ")" << std::endl;
 	}
 
 	else
 		std::cerr << "setTile: undef ref at " << x << ";" << y << std::endl;
 }
 
-void Map::addRows(std::size_t n)
+void Map::addRowsBottom(std::size_t n)
 {
 	if (n == 0)
 		return;
@@ -205,7 +229,15 @@ void Map::addRows(std::size_t n)
 	}
 }
 
-void Map::addCols(std::size_t n)
+void Map::addRowsTop(std::size_t number)
+{
+	for (auto& col : m_grid)
+		col.insert(col.begin(), number, '.');
+	GRID_HEIGHT += number;
+	regenerateVertices();
+}
+
+void Map::addColsRight(std::size_t n)
 {
 	if (n == 0)
 		return;
@@ -215,36 +247,58 @@ void Map::addCols(std::size_t n)
 	m_grid.insert(m_grid.end(), n, std::vector<char>(GRID_HEIGHT, '.'));
 }
 
-bool Map::deleteEmptyRowsTop()
+void Map::addColsLeft(std::size_t number)
+{
+	m_grid.insert(m_grid.begin(), number, std::vector<char>(GRID_HEIGHT, '.'));
+	GRID_WIDTH += number;
+	regenerateVertices();
+}
+
+void Map::removeEmptyColsRight()
 {
 	auto countVoid = [&]() -> int
 	{
-		int c = 0;
-		for (auto& col : m_grid)
-		{
-			if (col.front() == '.')
-				++c;
-		}
-		return c;
+		if (!m_grid.empty())
+			return std::count(m_grid.back().begin(), m_grid.back().end(), '.');
+		return -1;
 	};
 
-	int previousGridHeight = GRID_HEIGHT;
+	int count = countVoid();
+	while (count == GRID_HEIGHT)
+	{
+		// delete col
+		m_grid.pop_back();
+		--GRID_WIDTH;
+
+		count = countVoid();
+	}
+}
+
+bool Map::removeEmptyColsLeft()
+{
+	auto countVoid = [&]() -> int
+	{
+		if (!m_grid.empty())
+			return std::count(m_grid.front().begin(), m_grid.front().end(), '.');
+		return -1;
+	};
+
+	int previousGridWidth = GRID_WIDTH;	// to check if one dim is modified
 
 	int count = countVoid();
-	while (count == GRID_WIDTH)
+	while (count == GRID_HEIGHT)
 	{
-		// delete row
-		for (auto& col : m_grid)
-			col.erase(col.begin());
-		--GRID_HEIGHT;
+		// delete col
+		m_grid.erase(m_grid.begin());
+		--GRID_WIDTH;
 
 		count = countVoid();
 	}
 
-	return GRID_HEIGHT != previousGridHeight;
+	return GRID_WIDTH != previousGridWidth;
 }
 
-void Map::deleteEmptyRowsDown()
+void Map::removeEmptyRowsBottom()
 {
 	auto countVoid = [&]() -> int
 	{
@@ -269,63 +323,33 @@ void Map::deleteEmptyRowsDown()
 	}
 }
 
-void Map::deleteEmptyColsRight()
+bool Map::removeEmptyRowsTop()
 {
 	auto countVoid = [&]() -> int
 	{
-		if (!m_grid.empty())
-			return std::count(m_grid.back().begin(), m_grid.back().end(), '.');
-		return -1;
+		int c = 0;
+		for (auto& col : m_grid)
+		{
+			if (col.front() == '.')
+				++c;
+		}
+		return c;
 	};
 
-	int count = countVoid();
-	while (count == GRID_HEIGHT)
-	{
-		// delete col
-		m_grid.pop_back();
-		--GRID_WIDTH;
-
-		count = countVoid();
-	}
-}
-
-bool Map::deleteEmptyColsLeft()
-{
-	auto countVoid = [&]() -> int
-	{
-		if (!m_grid.empty())
-			return std::count(m_grid.front().begin(), m_grid.front().end(), '.');
-		return -1;
-	};
-
-	int previousGridWidth = GRID_WIDTH;	// to check if one dim is modified
+	int previousGridHeight = GRID_HEIGHT;	// to check if one dim is modified
 
 	int count = countVoid();
-	while (count == GRID_HEIGHT)
+	while (count == GRID_WIDTH)
 	{
-		// delete col
-		m_grid.erase(m_grid.begin());
-		--GRID_WIDTH;
+		// delete row
+		for (auto& col : m_grid)
+			col.erase(col.begin());
+		--GRID_HEIGHT;
 
 		count = countVoid();
 	}
 
-	return GRID_WIDTH != previousGridWidth;
-}
-
-void Map::moveDown(std::size_t number)
-{
-	for (auto& col : m_grid)
-		col.insert(col.begin(), number, '.');
-	GRID_HEIGHT += number;
-	regenerateVertices();
-}
-
-void Map::moveRight(std::size_t number)
-{
-	m_grid.insert(m_grid.begin(), number, std::vector<char>(GRID_HEIGHT, '.'));
-	GRID_WIDTH += number;
-	regenerateVertices();
+	return GRID_HEIGHT != previousGridHeight;
 }
 
 char Map::getTileIndex(int x, int y) const

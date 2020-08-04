@@ -65,6 +65,11 @@ void GameObject::setPosition(const sf::Vector2f& pos)
 	setPosition(pos.x, pos.y);
 }
 
+void GameObject::move(const sf::Vector2f& offset)
+{
+	setPosition(getPosition() + offset);
+}
+
 void GameObject::setSize(float x, float y)
 {
 	m_currentHitbox.w = x;

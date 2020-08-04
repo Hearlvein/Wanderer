@@ -66,30 +66,30 @@ public:
 				(int)std::floor(worldCoords.y / TILE_SIZE)
 			};
 
+			// To compare previous and after states
 			sf::Vector2i previousGridSize{
 				m_gs.m_map.GRID_WIDTH,
 				m_gs.m_map.GRID_HEIGHT,
 			};
 
-			bool frontModification = false;
+			// Hint to know how to translate entities and view
+			bool newColLeft = false;
+			bool newRowTop = false;
 
-			if (mouseCode == 0)
-				m_gs.m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, '.', &frontModification);
-			else if (mouseCode == 1)
-				m_gs.m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, m_selectedCharIndex, &frontModification);
+			char index = (mouseCode == 0) ? '.' : m_selectedCharIndex;
+			m_gs.m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, index, &newColLeft, &newRowTop);
 
-			// Translate
-			if (frontModification)
+			// Translate entities and view if needed
+			sf::Vector2f translation;
+			if (newColLeft)	translation.x = (m_gs.m_map.GRID_WIDTH  - previousGridSize.x) * TILE_SIZE;
+			if (newRowTop)	translation.y = (m_gs.m_map.GRID_HEIGHT - previousGridSize.y) * TILE_SIZE;
+
+			if (translation != sf::Vector2f())
 			{
 				std::cout << "translating" << std::endl;
 
-				sf::Vector2f translation{
-					(m_gs.m_map.GRID_WIDTH - previousGridSize.x) * TILE_SIZE,
-					(m_gs.m_map.GRID_HEIGHT - previousGridSize.y) * TILE_SIZE
-				};
-
 				for (GameObject* entity : m_gs.m_entities)
-					entity->setPosition(entity->getPosition() + translation);
+					entity->move(translation);
 
 				sf::View v = m_gs.m_window->getView();
 				v.move(-translation);
@@ -137,13 +137,10 @@ public:
 
 			if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left)
 			{
-				int index = (float)e.mouseButton.x / TILE_SIZE;
-
+				int index = static_cast<int>((float)e.mouseButton.x / TILE_SIZE);
 				if      (index == 0) m_selectedCharIndex = 'a';
 				else if (index == 1) m_selectedCharIndex = 'b';
 				else if (index == 2) m_selectedCharIndex = 'l';
-
-				std::cout << "char index=" << m_selectedCharIndex << std::endl;
 			}
 		}
 	}

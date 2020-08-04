@@ -32,6 +32,7 @@ private:
 
 	void setPosition(float x, float y);
 	void setPosition(const sf::Vector2f& pos);
+	void move(const sf::Vector2f& offset);
 	void setSize(float x, float y);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 

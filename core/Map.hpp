@@ -18,15 +18,17 @@ public:
 	void load(const std::string& filename,
 		const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity);
 
-	void setTile(int x, int y, char index, bool* frontModifications = nullptr);
-	void addRows(std::size_t n);
-	void addCols(std::size_t n);
-	bool deleteEmptyRowsTop();
-	void deleteEmptyRowsDown();
-	void deleteEmptyColsRight();
-	bool deleteEmptyColsLeft();
-	void moveDown(std::size_t number);
-	void moveRight(std::size_t number);
+	void setTile(int x, int y, char index, bool* newColLeft = nullptr, bool* newRowTop = nullptr);
+
+	void addColsRight	(std::size_t n);
+	void addColsLeft	(std::size_t n);
+	void addRowsBottom	(std::size_t n);
+	void addRowsTop		(std::size_t n);
+
+	void removeEmptyColsRight();
+	bool removeEmptyColsLeft();
+	void removeEmptyRowsBottom();
+	bool removeEmptyRowsTop();
 
 	char getTileIndex(int x, int y) const;
 	const Tile& getTile(int x, int y) const;    // get tile from index
