@@ -9,14 +9,16 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <cmath>
+#include <map>
 
 class Map;
 
 class MapEditor
 {
 public:
-	MapEditor(GameScene& gs)
+	MapEditor(GameScene& gs, TilesManager& tm)
 		: m_gs(gs)
+		, m_tilesMgr(tm)
 	{
 		m_tilesWindow.create({ m_tilesPerRow * (unsigned)TILE_SIZE, m_tilesPerCol * (unsigned)TILE_SIZE }, "Tiles", sf::Style::Titlebar);
 		m_tilesWindow.setPosition({ 0, 0, });
@@ -29,6 +31,9 @@ public:
 
 		m_tilesSprites['l'] = sf::Sprite(m_gs.m_tileset, { 3 * (int)TILE_SIZE, 0, (int)TILE_SIZE, (int)TILE_SIZE });
 		m_tilesSprites['l'].setPosition({ 2 * TILE_SIZE, 0.f });
+
+		
+		m_selectedTile = m_tilesMgr.getDefaultTile();
 	}
 	~MapEditor() {}
 
@@ -76,8 +81,10 @@ public:
 			bool newColLeft = false;
 			bool newRowTop = false;
 
-			char index = (mouseCode == 0) ? '.' : m_selectedCharIndex;
-			m_gs.m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, index, &newColLeft, &newRowTop);
+			const Tile* newTile = (mouseCode == 0)
+				? m_tilesMgr.getDefaultTile()
+				: m_selectedTile;
+			m_gs.m_map.setTile(mouseTileCoords.x, mouseTileCoords.y, newTile, &newColLeft, &newRowTop);
 
 			// Translate entities and view if needed
 			sf::Vector2f translation;
@@ -105,7 +112,7 @@ public:
 		// keyboard events
 		if (event.type == sf::Event::KeyPressed)
 		{
-			if (event.key.code == sf::Keyboard::S)	// S key: save map to file
+			if (event.key.code == sf::Keyboard::S)		// S key: save map to file
 				saveFile();
 
 			else if (event.key.code == sf::Keyboard::R)	// R key: reload level from file
@@ -124,7 +131,7 @@ public:
 				(int)std::floor(worldCoords.y / TILE_SIZE)
 			};
 
-			m_selectedCharIndex = m_gs.m_map.getTileIndex(mouseTileCoords.x, mouseTileCoords.y);
+			m_selectedTile = m_gs.m_map.getTile(mouseTileCoords.x, mouseTileCoords.y);
 		}
 	}
 
@@ -137,20 +144,39 @@ public:
 
 			if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left)
 			{
-				int index = static_cast<int>((float)e.mouseButton.x / TILE_SIZE);
-				if      (index == 0) m_selectedCharIndex = 'a';
-				else if (index == 1) m_selectedCharIndex = 'b';
-				else if (index == 2) m_selectedCharIndex = 'l';
+				int index = static_cast<int>(e.mouseButton.x / TILE_SIZE);
+				if      (index == 0) m_selectedTile = m_tilesMgr.getTileFromIndex('a');
+				else if (index == 1) m_selectedTile = m_tilesMgr.getTileFromIndex('b');
+				else if (index == 2) m_selectedTile = m_tilesMgr.getTileFromIndex('l');
 			}
 		}
 	}
 
 	void saveFile() const
 	{
-		sf::Vector2i playerCoords {
-			(int)(m_gs.m_player->getPosition().x / TILE_SIZE),
-			((int)(m_gs.m_player->getPosition().y / TILE_SIZE)) + 1
+		auto getEntityCoords = [](const GameObject* go)
+		{
+			return sf::Vector2i(
+				(int)(go->getPosition().x / TILE_SIZE),
+				((int)(go->getPosition().y / TILE_SIZE)) + 1
+			);
 		};
+
+		std::multimap<char, sf::Vector2i> entitiesCoords;
+		entitiesCoords.emplace('p', getEntityCoords(m_gs.m_player));
+		for (auto e : m_gs.m_enemies)
+			entitiesCoords.emplace('e', getEntityCoords(e));
+
+        auto getCharIndex = [&](int x, int y) -> char
+        {
+            for (auto it = entitiesCoords.begin(); it != entitiesCoords.end(); ++it)
+            {
+                if (it->second == sf::Vector2i(x, y))
+                    return it->first;
+            }
+
+            return m_gs.m_map.getTileIndex(x, y);
+        };
 
 		std::ofstream stream(levelsPath + "level.txt");
 		if (!stream)
@@ -162,12 +188,7 @@ public:
 		for (int y = 0; y < m_gs.m_map.GRID_HEIGHT; ++y)
 		{
 			for (int x = 0; x < m_gs.m_map.GRID_WIDTH; ++x)
-			{
-				if (x == playerCoords.x && y == playerCoords.y)
-					stream << "p ";
-				else
-					stream << m_gs.m_map.m_grid[x][y] << " ";
-			}
+				stream << getCharIndex(x, y) << " ";
 
 			if (y + 1 < m_gs.m_map.GRID_HEIGHT)
 				stream << '\n';
@@ -187,6 +208,7 @@ private:
 	const std::size_t m_tilesPerCol = 1;
 	std::map<char, sf::Sprite> m_tilesSprites;
 
-	char m_selectedCharIndex = 'a';
+	const Tile* m_selectedTile;	// Can't be nullptr
+	TilesManager& m_tilesMgr;
 	sf::Clock m_editTimer;	// prevent from spamming
 };

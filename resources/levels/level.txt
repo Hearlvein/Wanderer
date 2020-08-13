@@ -1,4 +1,8 @@
-a p a . . 
-a a a . a 
-b b b . b 
-l l l . l 
+a a a a a a a a a a a a a a a 
+. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . 
+. . . a . . . . . . . a . . . 
+. . . a p a e . a e . a . . . 
+. . . b b b b b b b b b . . . 
+. . . l l l l l l l l l . . . 

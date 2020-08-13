@@ -8,6 +8,16 @@
 #include <fstream>
 #include <cmath>
 
+void Map::printGrid()
+{
+	for (int y = 0; y < GRID_HEIGHT; ++y)
+	{
+		for (int x = 0; x < GRID_WIDTH; ++x)
+			std::cout << m_grid[x][y]->getIndex() << " ";
+		std::cout << std::endl;
+	}
+}
+
 void Map::load(const std::string& filename,
 	const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity)
 {
@@ -63,7 +73,9 @@ void Map::load(const std::string& filename,
 				c = '.';
 			}
 
-			m_grid[i].emplace_back(c); // note that c could be modified above
+			const Tile* currentTileToAdd = m_tilesMgr.getTileFromIndex(c);	// Note that c could be modified above
+			assert(currentTileToAdd);										// Tile created by tiles manager (JSON presence)
+			m_grid[i].emplace_back(currentTileToAdd);
 		}
 	}
 
@@ -81,19 +93,17 @@ void Map::load(const std::string& filename,
 	// std::cout << "vertex array size: " << m_vertices.size() << std::endl;
 }
 
-void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
+void Map::setTile(int x, int y, const Tile* newTile, bool* newColLeft, bool* newRowTop)
 {
 	if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) // no increase, maybe decrease
 	{
-		char& gIndex = m_grid[x][y];
-
 		// testing property first for optimization
-		if (gIndex == index)   // same tile
+		if (m_grid[x][y] == newTile)   // same tile
 			return;
 
-		gIndex = index;
+		m_grid[x][y] = newTile;
 
-		if (gIndex == '.')  // try to reduce on deletion
+		if (m_grid[x][y]->getProperty() == Tile::Property::Void)  // try to reduce on deletion
 		{
 			// ----- Becareful functions: move entities and cam -----
 			*newColLeft = removeEmptyColsLeft();
@@ -109,7 +119,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 
 		// std::cout << "vertex array size: " << m_vertices.size() << std::endl;
 	}
-	else if (index != '.')  // modify grid dimensions
+	else if (newTile->getProperty() != Tile::Property::Void)  // modify grid dimensions
 	{
 		// Adding bottom-right
 		if (x >= GRID_WIDTH && y >= GRID_HEIGHT)
@@ -119,7 +129,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			addColsRight(x - GRID_WIDTH + 1);
 			addRowsBottom(y - GRID_HEIGHT + 1);
 
-			setTile(0, 0, index);
+			setTile(0, 0, newTile);
 		}
 
 		// Adding bottom only
@@ -130,7 +140,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			// need to add more rows
 			addRowsBottom(y - GRID_HEIGHT + 1);
 
-			setTile(x, y, index);
+			setTile(x, y, newTile);
 		}
 
 		// Adding right only
@@ -141,7 +151,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			// need to add more cols
 			addColsRight(x - GRID_WIDTH + 1);
 
-			setTile(x, y, index);
+			setTile(x, y, newTile);
 		}
 
 		// Adding top-left
@@ -155,7 +165,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			addColsLeft(-x);
 			addRowsTop(-y);
 
-			setTile(0, 0, index);
+			setTile(0, 0, newTile);
 		}
 
 		// Adding top only
@@ -167,7 +177,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 
 			addRowsTop(-y);
 
-			setTile(x, 0, index);
+			setTile(x, 0, newTile);
 		}
 
 		// Adding left only
@@ -179,7 +189,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 
 			addColsLeft(-x);
 
-			setTile(0, y, index);
+			setTile(0, y, newTile);
 		}
 
 		// Adding top-right
@@ -192,7 +202,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			addRowsTop(-y);
 			addColsRight(x - GRID_WIDTH + 1);
 
-			setTile(x, 0, index);
+			setTile(x, 0, newTile);
 		}
 
 		// Adding bottom-left
@@ -205,7 +215,7 @@ void Map::setTile(int x, int y, char index, bool* newColLeft, bool* newRowTop)
 			addColsLeft(-x);
 			addRowsBottom(y - GRID_HEIGHT + 1);
 
-			setTile(0, y, index);
+			setTile(0, y, newTile);
 		}
 
 		else
@@ -225,16 +235,15 @@ void Map::addRowsBottom(std::size_t n)
 	for (auto& col : m_grid)
 	{
 		col.reserve(GRID_HEIGHT);
-		col.insert(col.end(), n, '.');
+		col.insert(col.end(), n, m_tilesMgr.getDefaultTile());
 	}
 }
 
 void Map::addRowsTop(std::size_t number)
 {
 	for (auto& col : m_grid)
-		col.insert(col.begin(), number, '.');
+		col.insert(col.begin(), number, m_tilesMgr.getDefaultTile());
 	GRID_HEIGHT += number;
-	regenerateVertices();
 }
 
 void Map::addColsRight(std::size_t n)
@@ -244,14 +253,13 @@ void Map::addColsRight(std::size_t n)
 
 	GRID_WIDTH += n;
 	m_grid.reserve(GRID_WIDTH);
-	m_grid.insert(m_grid.end(), n, std::vector<char>(GRID_HEIGHT, '.'));
+	m_grid.insert(m_grid.end(), n, std::vector<const Tile*>(GRID_HEIGHT, m_tilesMgr.getDefaultTile()));
 }
 
 void Map::addColsLeft(std::size_t number)
 {
-	m_grid.insert(m_grid.begin(), number, std::vector<char>(GRID_HEIGHT, '.'));
+	m_grid.insert(m_grid.begin(), number, std::vector<const Tile*>(GRID_HEIGHT, m_tilesMgr.getDefaultTile()));
 	GRID_WIDTH += number;
-	regenerateVertices();
 }
 
 void Map::removeEmptyColsRight()
@@ -259,7 +267,7 @@ void Map::removeEmptyColsRight()
 	auto countVoid = [&]() -> int
 	{
 		if (!m_grid.empty())
-			return std::count(m_grid.back().begin(), m_grid.back().end(), '.');
+			return std::count(m_grid.back().begin(), m_grid.back().end(), m_tilesMgr.getDefaultTile());
 		return -1;
 	};
 
@@ -279,7 +287,7 @@ bool Map::removeEmptyColsLeft()
 	auto countVoid = [&]() -> int
 	{
 		if (!m_grid.empty())
-			return std::count(m_grid.front().begin(), m_grid.front().end(), '.');
+			return std::count(m_grid.front().begin(), m_grid.front().end(), m_tilesMgr.getDefaultTile());
 		return -1;
 	};
 
@@ -305,7 +313,7 @@ void Map::removeEmptyRowsBottom()
 		int c = 0;
 		for (auto& col : m_grid)
 		{
-			if (col.back() == '.')
+			if (col.back() == m_tilesMgr.getDefaultTile())
 				++c;
 		}
 		return c;
@@ -330,7 +338,7 @@ bool Map::removeEmptyRowsTop()
 		int c = 0;
 		for (auto& col : m_grid)
 		{
-			if (col.front() == '.')
+			if (col.front() == m_tilesMgr.getDefaultTile())
 				++c;
 		}
 		return c;
@@ -355,28 +363,28 @@ bool Map::removeEmptyRowsTop()
 char Map::getTileIndex(int x, int y) const
 {
 	if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-		return m_grid[x][y];
+		return m_grid[x][y]->getIndex();
 	else
-		return '?';
+		return m_tilesMgr.getDefaultTile()->getIndex();
 }
 
-const Tile& Map::getTile(int x, int y) const
+const Tile* Map::getTile(int x, int y) const
 {
 	if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT)
-		return Tile::getTileFromIndex(m_grid[x][y]);
+		return m_grid[x][y];
 	else
 	{
 		//std::cout << "getTileProperty: undef ref at " << x << ";" << y << std::endl;
-		return Tile::s_Void;
+		return m_tilesMgr.getDefaultTile();
 	}
 }
 
-TileProperty Map::getTileProperty(int x, int y) const
+Tile::Property Map::getTileProperty(int x, int y) const
 {
-	return getTile(x, y).property;
+	return getTile(x, y)->getProperty();
 }
 
-bool Map::touchingTile(const Box& box, TileProperty tileProperty) const
+bool Map::touchingTile(const Box& box, Tile::Property tileProperty)
 {
 	// Hypothetical values
 	int x_min = (int)std::floor(box.x / TILE_SIZE);
@@ -424,10 +432,10 @@ void Map::regenerateVertices()
 	{
 		for (int j = 0; j < GRID_HEIGHT; ++j)
 		{
-			if (getTileProperty(i, j) != Void)  // reduce vertices number
+			if (getTileProperty(i, j) != Tile::Property::Void)  // reduce vertices number
 			{
 				// set position & texture coords
-				auto& texCoords = getTile(i, j).texCoords;   // for read-ability
+				auto& texCoords = getTile(i, j)->getTexCoords();   // for read-ability
 
 				m_vertices.emplace_back(sf::Vector2f( i * TILE_SIZE,       j * TILE_SIZE     ), texCoords                                                     );
 				m_vertices.emplace_back(sf::Vector2f((i + 1) * TILE_SIZE,  j * TILE_SIZE     ), sf::Vector2f(texCoords.x + TILE_SIZE, texCoords.y            ));
@@ -436,6 +444,8 @@ void Map::regenerateVertices()
 			}
 		}
 	}
+
+	printGrid();
 }
 
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const

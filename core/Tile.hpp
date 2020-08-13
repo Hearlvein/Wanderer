@@ -1,46 +1,51 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
-enum TileProperty
+class Tile
 {
-	Void = 0,
-	Solid,
-	Ladder
-};
-
-struct Tile
-{
-	sf::Vector2f texCoords;
-	TileProperty property = Ladder;
-
-	static const Tile s_Void;
-	static const Tile s_Block1;
-	static const Tile s_Block2;
-	static const Tile s_Ladder;
-
-	static const Tile& getTileFromIndex(char i)
+public:
+	// In-class definition
+	enum class Property
 	{
-		switch (i)
+		Void = 0,
+		Solid,
+		Ladder
+	};
+
+	Tile(const std::string& name, char index, const sf::Vector2f& texCoords, Property tp)
+		: m_name(name), m_index(index), m_texCoords(texCoords), m_property(tp) {}
+
+	// Getters
+	const std::string& 	getName		() 	const { return m_name;		}
+	char 				getIndex	() 	const { return m_index;		}
+	const sf::Vector2f& getTexCoords() 	const { return m_texCoords;	}
+	Property 			getProperty	() 	const { return m_property;	}
+
+	// Helpers
+	static char getTileIndexFromString(const std::string& str)
+	{
+	    return str.front();
+	}
+
+	static Property getPropertyFromString(const std::string& str)
+	{
+		if 		(str == "Void")		return Property::Void;
+		else if (str == "Solid")	return Property::Solid;
+		else if (str == "Ladder")	return Property::Ladder;
+		else
 		{
-			case '.': 	return Tile::s_Void;
-			case 'a': 	return Tile::s_Block1;
-			case 'b':	return Tile::s_Block2;
-			case 'l': 	return Tile::s_Ladder;
-			default:	return Tile::s_Ladder;
+			std::cerr << "Couldn't get tile property from: \'" << str << "\'" << std::endl;
+			return Property::Void;
 		}
 	}
 
-	// Debugging purpose (printing map in console)
-	// TODO: remove
-	static char getPropertyCharIndexFromTile(const Tile& t)
-	{
-		switch (t.property)
-		{
-		case TileProperty::Void:	return '.';
-		case TileProperty::Solid:	return '#';
-		case TileProperty::Ladder:	return '|';
-		default:					return '?';
-		}
-	}
+private:
+	// Identity
+	std::string m_name;			// Optional, must for clarity's sake
+	char m_index;				// Used to parse level map file
+
+	sf::Vector2f m_texCoords;	// Position in tileset
+	Property m_property;		// Tile property
 };

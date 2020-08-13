@@ -6,6 +6,7 @@
 #include "Enemy.hpp"
 #include "Layer.hpp"
 #include "Background.hpp"
+#include "TilesManager.hpp"
 
 #include <list>
 #include <memory>
@@ -55,5 +56,6 @@ private:
 	bool m_imguiEnabled = true;
 	float m_lastDt = 0.f;
 
+	TilesManager m_tilesMgr;
 	mutable MapEditor* m_mapEditor = nullptr;
 };

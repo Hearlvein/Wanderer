@@ -14,6 +14,7 @@
 
 GameScene::GameScene(sf::RenderWindow* window)
 	: Scene(window)
+	, m_map(m_tilesMgr)
 {
 	// ------------------- textures (resource: loaded once) -------------------
 	m_tileset.loadFromFile(texturesPath + "tileset.png");
@@ -25,7 +26,7 @@ GameScene::GameScene(sf::RenderWindow* window)
 	assert(m_player != nullptr);
 
 	// TODO: debug purpose
-	m_mapEditor = new MapEditor(*this);
+	m_mapEditor = new MapEditor(*this, m_tilesMgr);
 }
 
 GameScene::~GameScene()
@@ -44,6 +45,7 @@ void GameScene::load()
 	m_layers["mobsLayer"].clear();
 	m_layers["playerLayer"].clear();
 	destroyEntities();
+	m_tilesMgr.clearTiles();
 	// TODO: dirty: can't reset position because background changed as the player is (initially) centered (moveCamera)
 	// m_background.resetPosition();
 
@@ -54,6 +56,8 @@ void GameScene::load()
 	m_layers["backgroundLayer"].addObject(m_background.getDrawable());
 
 	// map & entities
+	m_tilesMgr.loadTiles(texturesPath + "tilesData.json");	// Setting up pointers before creating map
+
 	m_map.setTexture(m_tileset);
 	m_map.load(levelsPath + "level.txt", [&](const std::string& n, const sf::Vector2f& p)
 	{
@@ -92,7 +96,7 @@ void GameScene::handleEvent(const sf::Event& event)
 		auto mousePosition = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
 		std::cout << "mouse position: " << mousePosition.x << " ; " << mousePosition.y << std::endl;
 	}
-	
+
 
 	if (m_mapEditor)
 	{
@@ -111,7 +115,7 @@ void GameScene::checkInput()
 			m_mapEditor = nullptr;
 		}
 		else
-			m_mapEditor = new MapEditor(*this);
+			m_mapEditor = new MapEditor(*this, m_tilesMgr);
 
 		sf::sleep(sf::milliseconds(100));	// prevent spamming
 	}
@@ -141,17 +145,17 @@ void GameScene::checkInput()
 		m_player->setYState(YState::Jumping);
 
 	// Check for ladder
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player->getHitbox(), Ladder))
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && m_map.touchingTile(m_player->getHitbox(), Tile::Property::Ladder))
 	{
 		m_player->setYState(YState::Climbing);
 		m_player->setClimbingDirection(Direction::Up);
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player->getHitbox(), Ladder))
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && m_map.touchingTile(m_player->getHitbox(), Tile::Property::Ladder))
 	{
 		m_player->setYState(YState::Climbing);
 		m_player->setClimbingDirection(Direction::Down);
 	}
-	else if (m_map.touchingTile(m_player->getHitbox(), Ladder))
+	else if (m_map.touchingTile(m_player->getHitbox(), Tile::Property::Ladder))
 		m_player->setClimbingDirection(Direction::None);
 }
 
@@ -192,7 +196,7 @@ void GameScene::update(float dt)
 
 void GameScene::updateClimbingState(MovingCharacter& entity)
 {
-	if (entity.getYState() == YState::Climbing && !m_map.touchingTile(m_player->getHitbox(), Ladder))
+	if (entity.getYState() == YState::Climbing && !m_map.touchingTile(m_player->getHitbox(), Tile::Property::Ladder))
 		entity.setYState(YState::Falling);
 }
 
@@ -240,7 +244,7 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 			//std::cout << " -> " << dy << std::endl;
 		}
 
-		if (!m_map.touchingTile({hitbox.x, hitbox.y+dy, hitbox.w, hitbox.h}, Solid))
+		if (!m_map.touchingTile({hitbox.x, hitbox.y+dy, hitbox.w, hitbox.h}, Tile::Property::Solid))
 			hitbox.y += dy;
 		else
 		{
@@ -267,7 +271,7 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 			//std::cout << " -> " << dx << std::endl;
 		}
 
-		if (!m_map.touchingTile({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}, Solid))
+		if (!m_map.touchingTile({hitbox.x+dx, hitbox.y, hitbox.w, hitbox.h}, Tile::Property::Solid))
 			hitbox.x += dx;
 		else
 		{
@@ -280,7 +284,7 @@ void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
 				*xCollision = true;
 		}
 
-		if (entity.getYState() == YState::Grounded && !m_map.touchingTile({ hitbox.x, hitbox.y + 2.f, hitbox.w, hitbox.h }, Solid))
+		if (entity.getYState() == YState::Grounded && !m_map.touchingTile({ hitbox.x, hitbox.y + 2.f, hitbox.w, hitbox.h }, Tile::Property::Solid))
 		{
 			//std::cerr << "moving aside made the player fall" << std::endl;
 			entity.setYState(YState::Falling);
