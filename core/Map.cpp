@@ -73,9 +73,7 @@ void Map::load(const std::string& filename,
 				c = '.';
 			}
 
-			const Tile* currentTileToAdd = m_tilesMgr.getTileFromIndex(c);	// Note that c could be modified above
-			assert(currentTileToAdd);										// Tile created by tiles manager (JSON presence)
-			m_grid[i].emplace_back(currentTileToAdd);
+			m_grid[i].emplace_back(m_tilesMgr.getTileFromIndex(c));
 		}
 	}
 
@@ -444,8 +442,6 @@ void Map::regenerateVertices()
 			}
 		}
 	}
-
-	printGrid();
 }
 
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const

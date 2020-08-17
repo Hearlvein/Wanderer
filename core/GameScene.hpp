@@ -28,11 +28,17 @@ public:
 	virtual void update(float dt) override;
 	virtual void draw(sf::RenderTarget& target) override;
 
+	// ----- Entity management -----
 	void addEntity(const std::string& name, const sf::Vector2f& position);
 	void moveEntity(MovingCharacter& entity, bool* xCollision = nullptr);
 	void updateClimbingState(MovingCharacter& entity);
 	void moveEnemy(Enemy& enemy);
-	void moveCamera();
+
+	// ----- Camera management -----
+	void setCameraOnPlayer(bool v = true);
+	void updateCamera();
+	void placeCameraOnPlayer();
+	void moveCamera(const sf::Vector2f& translation);
 
 private:
 	friend class MapEditor;
@@ -41,9 +47,9 @@ private:
 	sf::Texture m_tileset;
 	sf::Texture m_backgroundTexture;
 
+	// Layers
+	std::map<std::string, Layer> m_layers;
 	Background m_background;
-
-	const float m_screenPadding = 300.f;
 	Map m_map;
 
 	// entities storage
@@ -51,10 +57,12 @@ private:
 	Player* m_player = nullptr;
 	std::list<Enemy*> m_enemies;
 
-	std::map<std::string, Layer> m_layers;
-
+	// Behavior
 	bool m_imguiEnabled = true;
 	float m_lastDt = 0.f;
+	bool m_cameraOnPlayer = true;
+	const float m_screenPadding = 300.f;
+	const unsigned int m_mouseScreenPadding = 50;
 
 	TilesManager m_tilesMgr;
 	mutable MapEditor* m_mapEditor = nullptr;

@@ -46,7 +46,7 @@ void GameScene::load()
 	m_layers["playerLayer"].clear();
 	destroyEntities();
 	m_tilesMgr.clearTiles();
-	// TODO: dirty: can't reset position because background changed as the player is (initially) centered (moveCamera)
+	// TODO: dirty: can't reset position because background changed as the player is (initially) centered (placeCameraOnPlayer)
 	// m_background.resetPosition();
 
 	// intialize
@@ -64,6 +64,9 @@ void GameScene::load()
 		addEntity(n, p);
 	});
 	m_layers["mapLayer"].addObject(&m_map);
+
+	// reset camera
+	m_window->setView(m_window->getDefaultView());
 }
 
 void GameScene::destroyEntities()
@@ -191,7 +194,7 @@ void GameScene::update(float dt)
 		moveEnemy(*enemy);
 	}
 
-	moveCamera();
+	updateCamera();
 }
 
 void GameScene::updateClimbingState(MovingCharacter& entity)
@@ -302,7 +305,54 @@ void GameScene::moveEnemy(Enemy& enemy)
 		enemy.toggleFacing();
 }
 
-void GameScene::moveCamera()
+void GameScene::setCameraOnPlayer(bool value)
+{
+	m_cameraOnPlayer = value;
+}
+
+void GameScene::updateCamera()
+{
+	if (m_cameraOnPlayer)
+		placeCameraOnPlayer();
+	else
+	{
+		// Move camera if mouse pointer is close to the edge of the map window
+		// Regardless if map window is active or not
+		auto windowSize = m_window->getSize();
+		auto mousePositionInWindow = sf::Mouse::getPosition(*m_window);
+
+		// Mouse outside window? (even if active)
+		if (mousePositionInWindow.x < 0							||
+			mousePositionInWindow.y < 0							||
+			(unsigned)mousePositionInWindow.x > windowSize.x	||
+			(unsigned)mousePositionInWindow.y > windowSize.y)
+			return;
+
+		sf::Vector2f translation;
+
+		// Right
+		if (windowSize.x - mousePositionInWindow.x < m_mouseScreenPadding)
+			translation.x = 10.f;
+
+		// Left
+		else if ((unsigned)mousePositionInWindow.x < m_mouseScreenPadding)
+			translation.x = -10.f;
+
+		// Bottom
+		if (windowSize.y - mousePositionInWindow.y < m_mouseScreenPadding)
+			translation.y = 10.f;
+
+		// Top
+		else if ((unsigned)mousePositionInWindow.y < m_mouseScreenPadding)
+			translation.y = -10.f;
+
+		// A camera translation may be required
+		if (translation != sf::Vector2f())
+			moveCamera(translation);
+	}
+}
+
+void GameScene::placeCameraOnPlayer()
 {
 	sf::View currentView = m_window->getView();
 
@@ -317,6 +367,13 @@ void GameScene::moveCamera()
 		m_window->setView(currentView);
 
 	// }
+}
+
+void GameScene::moveCamera(const sf::Vector2f& translation)
+{
+	auto view = m_window->getView();
+	view.move(translation);
+	m_window->setView(view);
 }
 
 void GameScene::draw(sf::RenderTarget& target)

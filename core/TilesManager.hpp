@@ -53,12 +53,16 @@ public:
 				return &tile;
 		}
 
+		std::cerr << "Critical error: can't get tile from index(" << index << ")\n" << std::flush;
+		assert(false);
 		return nullptr;
 	}
 
 	const Tile* getDefaultTile() const 	{ return m_defaultTile; }
 
+	const std::list<Tile>& getTiles() const { return m_tiles; }
+
 private:
 	std::list<Tile> m_tiles;
-	const Tile* m_defaultTile = nullptr;
+	const Tile* m_defaultTile = nullptr;	// Usually VoidTile (see ctor). TODO: need to handle that dynamically at runtime
 };
