@@ -30,8 +30,8 @@ private:
 	GameScene& m_gs;
 
 	sf::RenderWindow m_tilesWindow;
-	const std::size_t m_tilesPerRow = 4;
-	const std::size_t m_tilesPerCol = 1;
+	std::size_t m_tilesPerRow = 4;
+	std::size_t m_tilesPerCol = 1;
 	std::vector<sf::Sprite> m_tilesSprites;
 
 	const Tile* m_selectedTile;	// Can't be nullptr

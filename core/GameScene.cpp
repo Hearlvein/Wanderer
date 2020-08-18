@@ -321,6 +321,10 @@ void GameScene::updateCamera()
 		auto windowSize = m_window->getSize();
 		auto mousePositionInWindow = sf::Mouse::getPosition(*m_window);
 
+		// Unactive map window?
+		if (!m_window->hasFocus())
+            return;
+
 		// Mouse outside window? (even if active)
 		if (mousePositionInWindow.x < 0							||
 			mousePositionInWindow.y < 0							||

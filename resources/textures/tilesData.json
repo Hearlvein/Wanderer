@@ -23,6 +23,12 @@
 			"index": "l",
 			"texCoords": [150, 0],
 			"property": "Ladder"
+		},
+		{
+			"name": "Vines",
+			"index": "v",
+			"texCoords": [200, 0],
+			"property": "Ladder"
 		}
 	]
 }

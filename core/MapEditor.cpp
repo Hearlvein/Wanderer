@@ -7,22 +7,25 @@ MapEditor::MapEditor(GameScene& gs, TilesManager& tm)
 	// Deactivate auto camera
 	m_gs.setCameraOnPlayer(false);
 
-	m_tilesWindow.create({ m_tilesPerRow * (unsigned)TILE_SIZE, m_tilesPerCol * (unsigned)TILE_SIZE }, "Tiles", sf::Style::Titlebar);
-	m_tilesWindow.setPosition({ 0, 0, });
-
 	const auto& tiles = m_tilesMgr.getTiles();
+	m_tilesPerRow = tiles.size();
 	int iterator_distance = 0;
 	for (auto it = tiles.begin(); it != tiles.end(); ++it)
 	{
 		m_tilesSprites.emplace_back(
 			m_gs.m_tileset,
 			sf::IntRect(it->getTexCoords().x, it->getTexCoords().y, TILE_SIZE, TILE_SIZE)
-		);
-		m_tilesSprites.back().setPosition(iterator_distance * TILE_SIZE, 0.f);
+		)
+		.setPosition(iterator_distance * TILE_SIZE, 0.f);
 
 		++iterator_distance;
 	}
 
+	m_tilesWindow.create({ m_tilesPerRow * (unsigned)TILE_SIZE, m_tilesPerCol * (unsigned)TILE_SIZE }, "Tiles", sf::Style::Titlebar);
+	m_tilesWindow.setPosition({ 0, 0, });
+
+	// Makes main window active. By default last created only is active
+	m_gs.m_window->requestFocus();
 
 	m_selectedTile = m_tilesMgr.getTileFromIndex('a');
 }
