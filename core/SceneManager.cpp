@@ -7,7 +7,7 @@
 
 SceneManager::SceneManager()
 {
-	m_window.create({1200, 600}, "Wanderer", sf::Style::Resize);	// final size
+	m_window.create({1200, 600}, "Wanderer"/*, sf::Style::Resize*/);	// final size
 	// m_window.create(sf::VideoMode((unsigned int)SCREEN_WIDTH, (unsigned int)SCREEN_HEIGHT), "Wanderer", sf::Style::Titlebar);
 	m_window.setVerticalSyncEnabled(true);
 

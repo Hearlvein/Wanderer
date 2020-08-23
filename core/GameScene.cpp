@@ -85,19 +85,33 @@ void GameScene::handleEvent(const sf::Event& event)
 {
 	if (event.type == sf::Event::Closed)
 	{
-		if (m_mapEditor)
-			m_mapEditor->close();
-
 		m_window->close();
-
 		return;
+	}
+	else if (event.type == sf::Event::Resized)
+	{
+		sf::FloatRect visibleArea(0.f, 0.f, (float)event.size.width, (float)event.size.height);
+		m_window->setView(sf::View(visibleArea));
 	}
 
 	// Mouse coordinates in world coordinates
-	else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W)
+	else if (event.type == sf::Event::KeyPressed)
 	{
-		auto mousePosition = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
-		std::cout << "mouse position: " << mousePosition.x << " ; " << mousePosition.y << std::endl;
+		if (event.key.code == sf::Keyboard::W)
+		{
+			auto mousePosition = m_window->mapPixelToCoords(sf::Mouse::getPosition(*m_window));
+			std::cout << "mouse position: " << mousePosition.x << " ; " << mousePosition.y << std::endl;
+		}
+		else if (event.key.code == sf::Keyboard::E)
+		{
+			if (m_mapEditor)
+			{
+				delete m_mapEditor;
+				m_mapEditor = nullptr;
+			}
+			else
+				m_mapEditor = new MapEditor(*this, m_tilesMgr);
+		}
 	}
 
 
@@ -109,23 +123,8 @@ void GameScene::handleEvent(const sf::Event& event)
 
 void GameScene::checkInput()
 {
-	// map editor
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-	{
-		if (m_mapEditor)
-		{
-			delete m_mapEditor;
-			m_mapEditor = nullptr;
-		}
-		else
-			m_mapEditor = new MapEditor(*this, m_tilesMgr);
-
-		sf::sleep(sf::milliseconds(100));	// prevent spamming
-	}
-
 	if (m_mapEditor)
 	{
-		m_mapEditor->handleTilesWindowEvents();	// TODO: need a place to call this
 		m_mapEditor->handleInputs();
 	}
 
@@ -314,6 +313,7 @@ void GameScene::updateCamera()
 {
 	if (m_cameraOnPlayer)
 		placeCameraOnPlayer();
+#if 1
 	else
 	{
 		// Move camera if mouse pointer is close to the edge of the map window
@@ -354,6 +354,7 @@ void GameScene::updateCamera()
 		if (translation != sf::Vector2f())
 			moveCamera(translation);
 	}
+#endif
 }
 
 void GameScene::placeCameraOnPlayer()
@@ -391,5 +392,8 @@ void GameScene::draw(sf::RenderTarget& target)
 		m_mapEditor->render();
 
 	if (m_imguiEnabled)
-		ImGui::Text("Frame took %f FPS=%f", m_lastDt * 1000.f, 1 / m_lastDt);
+    {
+        ImGui::Text("Frame took %f FPS=%f", m_lastDt * 1000.f, 1 / m_lastDt);
+        // ShowDemoWindow();
+    }
 }
