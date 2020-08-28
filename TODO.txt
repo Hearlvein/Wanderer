@@ -1,4 +1,2 @@
 - add entity placement editor	...
-- tilesWindow visibility (ImGUI?)
 - maybe use std::list to store vertices to not invalidate pointers and avoid regenerateVertices()?
-- reloading level only works when saved modification performed
