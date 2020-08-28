@@ -20,10 +20,8 @@ GameScene::GameScene(sf::RenderWindow* window)
 	m_tileset.loadFromFile(texturesPath + "tileset.png");
 	m_backgroundTexture.loadFromFile(texturesPath + "background.png");
 
-	load();	// load map and entities
-
-	// player must be registered
-	assert(m_player != nullptr);
+	// TODO: level.txt is some kind of default level to load. Should be customizable (levelData.json)
+	load("level.txt");	// load map and entities
 
 	// TODO: debug purpose
 	m_mapEditor = new MapEditor(*this, m_tilesMgr);
@@ -37,7 +35,7 @@ GameScene::~GameScene()
 	destroyEntities();
 }
 
-void GameScene::load()
+void GameScene::load(const std::string& levelFilename)
 {
 	// reset
 	m_layers["backgroundLayer"].clear();
@@ -56,10 +54,11 @@ void GameScene::load()
 	m_layers["backgroundLayer"].addObject(m_background.getDrawable());
 
 	// map & entities
+	// Important: load tiles before map because map uses the tiles (obviously!)
 	m_tilesMgr.loadTiles(texturesPath + "tilesData.json");	// Setting up pointers before creating map
 
 	m_map.setTexture(m_tileset);
-	m_map.load(levelsPath + "level.txt", [&](const std::string& n, const sf::Vector2f& p)
+	m_map.load(levelsPath + levelFilename, [&](const std::string& n, const sf::Vector2f& p)
 	{
 		addEntity(n, p);
 	});
@@ -67,6 +66,9 @@ void GameScene::load()
 
 	// reset camera
 	m_window->setView(m_window->getDefaultView());
+
+	// Player should be registered after loading
+	assert(m_player);
 }
 
 void GameScene::destroyEntities()
@@ -81,8 +83,21 @@ void GameScene::destroyEntities()
 	}
 }
 
+void GameScene::setReadEvents(bool read)
+{
+	m_readEvents = read;
+}
+
+bool GameScene::getReadEvents() const
+{
+	return m_readEvents;
+}
+
 void GameScene::handleEvent(const sf::Event& event)
 {
+	if (!m_readEvents)
+		return;
+
 	if (event.type == sf::Event::Closed)
 	{
 		m_window->close();
@@ -127,6 +142,9 @@ void GameScene::checkInput()
 	{
 		m_mapEditor->handleInputs();
 	}
+
+	if (!m_readEvents)
+		return;
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
@@ -207,6 +225,7 @@ void GameScene::addEntity(const std::string& name, const sf::Vector2f& position)
 	if (name == "player")
 	{
 		// Allocation
+		assert(!m_player);	// m_player should be initialized once per map loading
 		m_player = new Player();
 		m_entities.push_front(m_player);
 
@@ -314,45 +333,9 @@ void GameScene::updateCamera()
 	if (m_cameraOnPlayer)
 		placeCameraOnPlayer();
 #if 1
-	else
+	else if (m_readEvents)
 	{
-		// Move camera if mouse pointer is close to the edge of the map window
-		// Regardless if map window is active or not
-		auto windowSize = m_window->getSize();
-		auto mousePositionInWindow = sf::Mouse::getPosition(*m_window);
-
-		// Unactive map window?
-		if (!m_window->hasFocus())
-            return;
-
-		// Mouse outside window? (even if active)
-		if (mousePositionInWindow.x < 0							||
-			mousePositionInWindow.y < 0							||
-			(unsigned)mousePositionInWindow.x > windowSize.x	||
-			(unsigned)mousePositionInWindow.y > windowSize.y)
-			return;
-
-		sf::Vector2f translation;
-
-		// Right
-		if (windowSize.x - mousePositionInWindow.x < m_mouseScreenPadding)
-			translation.x = 10.f;
-
-		// Left
-		else if ((unsigned)mousePositionInWindow.x < m_mouseScreenPadding)
-			translation.x = -10.f;
-
-		// Bottom
-		if (windowSize.y - mousePositionInWindow.y < m_mouseScreenPadding)
-			translation.y = 10.f;
-
-		// Top
-		else if ((unsigned)mousePositionInWindow.y < m_mouseScreenPadding)
-			translation.y = -10.f;
-
-		// A camera translation may be required
-		if (translation != sf::Vector2f())
-			moveCamera(translation);
+		moveCameraIfMouseOnEdge();
 	}
 #endif
 }
@@ -381,6 +364,47 @@ void GameScene::moveCamera(const sf::Vector2f& translation)
 	m_window->setView(view);
 }
 
+void GameScene::moveCameraIfMouseOnEdge()
+{
+	// Move camera if mouse pointer is close to the edge of the map window
+		// Regardless if map window is active or not
+	auto windowSize = m_window->getSize();
+	auto mousePositionInWindow = sf::Mouse::getPosition(*m_window);
+
+	// Unactive map window?
+	if (!m_window->hasFocus())
+		return;
+
+	// Mouse outside window? (even if active)
+	if (mousePositionInWindow.x < 0 ||
+		mousePositionInWindow.y < 0 ||
+		(unsigned)mousePositionInWindow.x > windowSize.x ||
+		(unsigned)mousePositionInWindow.y > windowSize.y)
+		return;
+
+	sf::Vector2f translation;
+
+	// Right
+	if (windowSize.x - mousePositionInWindow.x < m_mouseScreenPadding)
+		translation.x = 10.f;
+
+	// Left
+	else if ((unsigned)mousePositionInWindow.x < m_mouseScreenPadding)
+		translation.x = -10.f;
+
+	// Bottom
+	if (windowSize.y - mousePositionInWindow.y < m_mouseScreenPadding)
+		translation.y = 10.f;
+
+	// Top
+	else if ((unsigned)mousePositionInWindow.y < m_mouseScreenPadding)
+		translation.y = -10.f;
+
+	// A camera translation may be required
+	if (translation != sf::Vector2f())
+		moveCamera(translation);
+}
+
 void GameScene::draw(sf::RenderTarget& target)
 {
 	target.draw(m_layers["backgroundLayer"]);
@@ -394,6 +418,6 @@ void GameScene::draw(sf::RenderTarget& target)
 	if (m_imguiEnabled)
     {
         ImGui::Text("Frame took %f FPS=%f", m_lastDt * 1000.f, 1 / m_lastDt);
-        // ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
     }
 }

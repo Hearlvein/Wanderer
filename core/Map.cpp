@@ -18,7 +18,7 @@ void Map::printGrid()
 	}
 }
 
-void Map::load(const std::string& filename,
+bool Map::load(const std::string& filename,
 	const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity)
 {
 	// reset
@@ -26,7 +26,15 @@ void Map::load(const std::string& filename,
 	m_grid.clear();
 	m_vertices.clear();
 
+	m_levelFilename = filename;
+
 	std::ifstream file(filename);
+	if (!file)
+	{
+		std::cerr << "Map load: can't open " << filename << std::endl;
+		return false;
+	}
+	
 	std::string line;
 
 	// used in nested loops
@@ -89,6 +97,14 @@ void Map::load(const std::string& filename,
 
 	std::cout << "grid size: " << GRID_WIDTH * GRID_HEIGHT << std::endl;
 	// std::cout << "vertex array size: " << m_vertices.size() << std::endl;
+
+
+	return true;	// level loaded successfully
+}
+
+const std::string& Map::getLevelFilename() const
+{
+	return m_levelFilename;
 }
 
 void Map::setTile(int x, int y, const Tile* newTile, bool* newColLeft, bool* newRowTop)

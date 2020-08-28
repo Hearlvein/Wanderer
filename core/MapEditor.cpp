@@ -1,4 +1,5 @@
 #include "MapEditor.hpp"
+#include "Constants.hpp"
 #include <imgui-SFML.h>
 #include <imgui.h>
 
@@ -42,39 +43,70 @@ MapEditor::~MapEditor()
 
 void MapEditor::render()
 {
-	// Hover
-	auto& w = *(m_gs.m_window);
-	sf::Vector2i mouse = sf::Mouse::getPosition(w);
-	if (mouse.x >= 0 &&
-		mouse.y >= 0 &&
-		(unsigned)mouse.x < w.getSize().x &&
-		(unsigned)mouse.y < w.getSize().y)
+	// Update map window read events state
+	if (ImGui::IsAnyWindowHovered() || ImGui::IsAnyItemHovered())
+		m_gs.setReadEvents(false);
+	else
 	{
-		sf::Vector2f coords = w.mapPixelToCoords(mouse);
-		sf::Vector2f floored(
-			std::floor(coords.x / TILE_SIZE) * TILE_SIZE,
-			std::floor(coords.y / TILE_SIZE) * TILE_SIZE
-		);
-		m_hover.setPosition(floored);
-		w.draw(m_hover);
+		m_gs.setReadEvents(true);
+
+		// Hover
+		auto& w = *(m_gs.m_window);
+		sf::Vector2i mouse = sf::Mouse::getPosition(w);
+		// Mouse should be in the window to enable hovering
+		if (mouse.x >= 0 &&
+			mouse.y >= 0 &&
+			(unsigned)mouse.x < w.getSize().x &&
+			(unsigned)mouse.y < w.getSize().y)
+		{
+			sf::Vector2f coords = w.mapPixelToCoords(mouse);
+			sf::Vector2f floored(
+				std::floor(coords.x / TILE_SIZE) * TILE_SIZE,
+				std::floor(coords.y / TILE_SIZE) * TILE_SIZE
+			);
+			m_hover.setPosition(floored);
+			w.draw(m_hover);
+		}
 	}
 
-	ImGui::Begin("Tiles window");
+	
+
+	// ---------------- ImGUI stuff ----------------
+	using namespace ImGui;
+
+	Begin("Map Editor");
+
+	Text("Save or load level");
+	InputText("Level filename", m_levelFilenameBuffer, 64);
+	if (Button("Save level"))
+		saveFile(levelsPath + m_levelFilenameBuffer + ".txt");
+	SameLine();
+	if (Button("Load level"))
+		m_gs.load((const std::string)m_levelFilenameBuffer + ".txt");
+
+
+	Text("Tiles window");
 	for (std::size_t i = 0; i < m_tilesSprites.size(); ++i)
-    {
-        ImGui::PushID(753 + i);
-        if (ImGui::ImageButton(m_tilesSprites[i]))
-        {
-            auto tileIt = m_tilesMgr.getTiles().begin();
-            std::advance(tileIt, i);
-            m_selectedTile = &(*tileIt);
-            updateHover();
-            std::cout << "clicked; dist=" << i << std::endl;
-        }
-        ImGui::PopID();
-        ImGui::SameLine(0.f, 0.f);
-    }
-    ImGui::End();
+	{
+		PushID(i);
+		if (ImageButton(m_tilesSprites[i]))
+		{
+			auto tileIt = m_tilesMgr.getTiles().begin();
+			std::advance(tileIt, i);
+			m_selectedTile = &(*tileIt);
+			updateHover();
+		}
+		PopID();
+
+		if (i+1 < m_tilesSprites.size())
+			SameLine(0.f, 0.f);
+	}
+
+	
+	Text("Center camera on player");
+	Checkbox("Center on player", &(m_gs.m_cameraOnPlayer));
+
+	End();	// Map editor
 }
 
 void MapEditor::handleInputs()
@@ -86,7 +118,7 @@ void MapEditor::handleInputs()
 
 	// Pre-requisites: window active (with pointer inside) and edit delay respected
 	if (!m_gs.m_window->hasFocus() ||
-		m_editTimer.getElapsedTime() < sf::milliseconds(50))
+		m_editTimer.getElapsedTime() < m_editDelay)
 		return;
 
 	// mouse management
@@ -142,18 +174,8 @@ void MapEditor::handleInputs()
 
 void MapEditor::handleMapWindowEvent(const sf::Event& event)
 {
-	// keyboard events
-	if (event.type == sf::Event::KeyPressed)
-	{
-		if (event.key.code == sf::Keyboard::S)		// S key: save map to file
-			saveFile();
-
-		else if (event.key.code == sf::Keyboard::R)	// R key: reload level from file
-			m_gs.load();
-	}
-
-	// mouse middle button event (copy tile)
-	else if (event.type == sf::Event::MouseButtonPressed &&
+	// Middle mouse button selection
+	if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Middle)
 	{
 		sf::Vector2f worldCoords = m_gs.m_window->mapPixelToCoords(
@@ -169,7 +191,7 @@ void MapEditor::handleMapWindowEvent(const sf::Event& event)
 	}
 }
 
-void MapEditor::saveFile() const
+void MapEditor::saveFile(const std::string& levelFilename) const
 {
 	auto getEntityCoords = [](const GameObject* go)
 	{
@@ -195,7 +217,7 @@ void MapEditor::saveFile() const
         return m_gs.m_map.getTileIndex(x, y);
     };
 
-	std::ofstream stream(levelsPath + "level.txt");
+	std::ofstream stream(levelFilename);
 	if (!stream)
 	{
 		std::cerr << "couldn't create save file stream!" << std::endl;

@@ -20,8 +20,10 @@ public:
 	GameScene(sf::RenderWindow* window);
 	virtual ~GameScene();
 
-	void load();
+	void load(const std::string& levelFilename);
 	void destroyEntities();
+	void setReadEvents(bool read);
+	bool getReadEvents() const;
 
 	virtual void handleEvent(const sf::Event& event) override;
 	virtual void checkInput() override;
@@ -39,6 +41,7 @@ public:
 	void updateCamera();
 	void placeCameraOnPlayer();
 	void moveCamera(const sf::Vector2f& translation);
+	void moveCameraIfMouseOnEdge();
 
 private:
 	friend class MapEditor;
@@ -58,6 +61,7 @@ private:
 	std::list<Enemy*> m_enemies;
 
 	// Behavior
+	bool m_readEvents = true;
 	bool m_imguiEnabled = true;
 	float m_lastDt = 0.f;
 	bool m_cameraOnPlayer = true;
