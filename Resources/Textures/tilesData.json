@@ -1,0 +1,34 @@
+{
+	"tiles": [
+		{
+			"name": "VoidTile",
+			"index": ".",
+			"texCoords": [0, 0],
+			"property": "Void"
+		},
+		{
+			"name": "Solid1",
+			"index": "a",
+			"texCoords": [50, 0],
+			"property": "Solid"
+		},
+		{
+			"name": "Solid2",
+			"index": "b",
+			"texCoords": [100, 0],
+			"property": "Solid"
+		},
+		{
+			"name": "Ladder",
+			"index": "l",
+			"texCoords": [150, 0],
+			"property": "Ladder"
+		},
+		{
+			"name": "Vines",
+			"index": "v",
+			"texCoords": [200, 0],
+			"property": "Ladder"
+		}
+	]
+}

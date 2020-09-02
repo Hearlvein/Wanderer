@@ -1,0 +1,23 @@
+-right
+frameCount: 2
+durations: 0.2 0.2
+subTextureCoords: 0 150 50 100 50 150 50 100
+hitboxCoords: 0 0 50 100 0 0 50 100
+
+-left
+frameCount: 2
+durations: 0.2 0.2
+subTextureCoords: 100 150 50 100 150 150 50 100
+hitboxCoords: 0 0 50 100 0 0 50 100
+
+-idleRight
+frameCount: 1
+durations: 0.2
+subTextureCoords: 0 150 50 100
+hitboxCoords: 0 50 50 100
+
+-idleLeft
+frameCount: 1
+durations: 0.2
+subTextureCoords: 100 150 50 100
+hitboxCoords: 0 50 50 100
