@@ -22,7 +22,7 @@ public:
 	void render();
 	void handleInputs();
 	void handleMapWindowEvent(const sf::Event& event);
-	void saveFile(const std::string& levelFilename) const;
+	void saveLevel(const std::string& levelFilename) const;
 	void updateHover();
 
 private:

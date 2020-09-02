@@ -2,7 +2,7 @@
 
 #include "Entity/AnimatedGameObject.hpp"
 
-class Character : public AnimatedGameObject
+class Character : public virtual AnimatedGameObject
 {
 public:
 	Character();

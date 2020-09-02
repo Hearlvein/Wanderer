@@ -18,8 +18,7 @@ void Map::printGrid()
 	}
 }
 
-bool Map::load(const std::string& filename,
-	const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity)
+bool Map::load(const std::string& filename)
 {
 	// reset
 	GRID_WIDTH = GRID_HEIGHT = 0;
@@ -68,20 +67,7 @@ bool Map::load(const std::string& filename,
 		for (i = 0; i < line.size(); ++i)
 		{
 			m_grid[i].reserve(currentRowIndex);
-
-			char c = line[i];
-			if (c == 'p')
-			{
-				placeEntity("player", { (float)i * TILE_SIZE, (float)(currentRowIndex - 1) * TILE_SIZE });
-				c = '.';
-			}
-			else if (c == 'e')
-			{
-				placeEntity("enemy", { (float)i * TILE_SIZE, (float)(currentRowIndex - 1) * TILE_SIZE });
-				c = '.';
-			}
-
-			m_grid[i].emplace_back(m_tilesMgr.getTileFromIndex(c));
+			m_grid[i].emplace_back(m_tilesMgr.getTileFromIndex(line[i]));
 		}
 	}
 

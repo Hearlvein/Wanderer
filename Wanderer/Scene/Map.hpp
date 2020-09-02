@@ -18,8 +18,7 @@ public:
 	void printGrid();
 
 	void setTexture(const sf::Texture& texture) { m_texture = &texture; }
-	bool load(const std::string& filename,
-		const std::function<void(const std::string& name, const sf::Vector2f& position)>& placeEntity);
+	bool load(const std::string& filename);
 	const std::string& getLevelFilename() const;
 
 	void setTile(int x, int y, const Tile* newTile, bool* newColLeft = nullptr, bool* newRowTop = nullptr);

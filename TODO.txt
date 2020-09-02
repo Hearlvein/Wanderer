@@ -1,2 +1,5 @@
-- add entity placement editor	...
+- add entity placement editor
 - maybe use std::list to store vertices to not invalidate pointers and avoid regenerateVertices()?
+- separate map data and entity data
+- add a level.json to store default level and defaultTile
+- use json for animation data

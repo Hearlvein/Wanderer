@@ -20,19 +20,21 @@ public:
 	GameScene(sf::RenderWindow* window);
 	virtual ~GameScene();
 
-	void load(const std::string& levelFilename);
-	void destroyEntities();
-	void setReadEvents(bool read);
-	bool getReadEvents() const;
+	void loadLevel(const std::string& levelFilename);
 
 	// ----- Scene overwritten methods -----
 	virtual void handleEvent(const sf::Event& event) override;
 	virtual void checkInput() override;
 	virtual void update(float dt) override;
 	virtual void draw(sf::RenderTarget& target) override;
+	
+	// ----- Behavior -----
+	void setReadEvents(bool read);
+	bool getReadEvents() const;
 
 	// ----- Entity management -----
-	void addEntity(const std::string& name, const sf::Vector2f& position);
+	void loadEntities(const std::string& entitiesFilename);
+	void destroyEntities();
 	void moveEntity(MovingCharacter& entity, bool* xCollision = nullptr);
 	void updateClimbingState(MovingCharacter& entity);
 	void moveEnemy(Enemy& enemy);

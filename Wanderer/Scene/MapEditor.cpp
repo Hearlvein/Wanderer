@@ -2,6 +2,8 @@
 #include "Constants.hpp"
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <iomanip>
+
 
 MapEditor::MapEditor(GameScene& gs, TilesManager& tm)
 	: m_gs(gs)
@@ -79,10 +81,10 @@ void MapEditor::render()
 	Text("Save or load level");
 	InputText("Level filename", m_levelFilenameBuffer, 64);
 	if (Button("Save level"))
-		saveFile(levelsPath + m_levelFilenameBuffer + ".txt");
+		saveLevel(levelsPath + m_levelFilenameBuffer);
 	SameLine();
 	if (Button("Load level"))
-		m_gs.load((const std::string)m_levelFilenameBuffer + ".txt");
+		m_gs.loadLevel(levelsPath + (const std::string)m_levelFilenameBuffer);
 
 
 	Text("Tiles window");
@@ -191,47 +193,45 @@ void MapEditor::handleMapWindowEvent(const sf::Event& event)
 	}
 }
 
-void MapEditor::saveFile(const std::string& levelFilename) const
+void MapEditor::saveLevel(const std::string& levelFilename) const
 {
-	auto getEntityCoords = [](const GameObject* go)
+	// Saving map
+	std::ofstream mapSaveStream(levelFilename + "/map.txt");
+	if (mapSaveStream)
 	{
-		return sf::Vector2i(
-			(int)(go->getPosition().x / TILE_SIZE),
-			((int)(go->getPosition().y / TILE_SIZE)) + 1
-		);
-	};
+		for (int y = 0; y < m_gs.m_map.GRID_HEIGHT; ++y)
+		{
+			for (int x = 0; x < m_gs.m_map.GRID_WIDTH; ++x)
+				mapSaveStream << m_gs.m_map.getTileIndex(x, y) << " ";
 
-	std::multimap<char, sf::Vector2i> entitiesCoords;
-	entitiesCoords.emplace('p', getEntityCoords(m_gs.m_player));
-	for (auto e : m_gs.m_enemies)
-		entitiesCoords.emplace('e', getEntityCoords(e));
-
-    auto getCharIndex = [&](int x, int y) -> char
-    {
-        for (auto it = entitiesCoords.begin(); it != entitiesCoords.end(); ++it)
-        {
-            if (it->second == sf::Vector2i(x, y))
-                return it->first;
-        }
-
-        return m_gs.m_map.getTileIndex(x, y);
-    };
-
-	std::ofstream stream(levelFilename);
-	if (!stream)
-	{
-		std::cerr << "couldn't create save file stream!" << std::endl;
-		return;
+			if (y + 1 < m_gs.m_map.GRID_HEIGHT)
+				mapSaveStream << '\n';
+		}
 	}
+	else
+		std::cerr << "couldn't create map save file stream!" << std::endl;
 
-	for (int y = 0; y < m_gs.m_map.GRID_HEIGHT; ++y)
+
+	// Saving entities
+	std::ofstream entitiesSaveStream(levelFilename + "/entities.json");
+	if (entitiesSaveStream)
 	{
-		for (int x = 0; x < m_gs.m_map.GRID_WIDTH; ++x)
-			stream << getCharIndex(x, y) << " ";
+		nlohmann::json data;
 
-		if (y + 1 < m_gs.m_map.GRID_HEIGHT)
-			stream << '\n';
+		const auto& player = *(m_gs.m_player);
+		data["player"] = { player.getPosition().x, player.getPosition().y };
+
+		data["enemies"] = {};
+		for (const Enemy* enemy : m_gs.m_enemies)
+		{
+			std::vector<float> vec_pos = { enemy->getPosition().x, enemy->getPosition().y };
+			data["enemies"].emplace_back(std::move(vec_pos));
+		}
+
+		entitiesSaveStream << std::setw(4) << data;
 	}
+	else
+		std::cerr << "couldn't create entities save file stream!" << std::endl;
 }
 
 void MapEditor::updateHover()

@@ -6,11 +6,14 @@
 
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <cassert>
 #include <cmath>
 
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <nlohmann/json.hpp>
+
 
 GameScene::GameScene(sf::RenderWindow* window)
 	: Scene(window)
@@ -21,7 +24,7 @@ GameScene::GameScene(sf::RenderWindow* window)
 	m_backgroundTexture.loadFromFile(texturesPath + "background.png");
 
 	// TODO: level.txt is some kind of default level to load. Should be customizable (levelData.json)
-	load("level.txt");	// load map and entities
+	loadLevel(levelsPath + "parkour");	// load map and entities
 
 	// TODO: debug purpose
 	m_mapEditor = new MapEditor(*this, m_tilesMgr);
@@ -35,7 +38,7 @@ GameScene::~GameScene()
 	destroyEntities();
 }
 
-void GameScene::load(const std::string& levelFilename)
+void GameScene::loadLevel(const std::string& levelFilename)
 {
 	// reset
 	m_layers["backgroundLayer"].clear();
@@ -53,15 +56,16 @@ void GameScene::load(const std::string& levelFilename)
 	m_background.getSprite()->setTexture(m_backgroundTexture);
 	m_layers["backgroundLayer"].addObject(m_background.getDrawable());
 
-	// map & entities
+	// Tiles
 	// Important: load tiles before map because map uses the tiles (obviously!)
 	m_tilesMgr.loadTiles(texturesPath + "tilesData.json");	// Setting up pointers before creating map
 
+	// Map
 	m_map.setTexture(m_tileset);
-	m_map.load(levelsPath + levelFilename, [&](const std::string& n, const sf::Vector2f& p)
-	{
-		addEntity(n, p);
-	});
+	m_map.load(levelFilename + "/map.txt");
+
+	// Entities
+	loadEntities(levelFilename + "/entities.json");
 	m_layers["mapLayer"].addObject(&m_map);
 
 	// reset camera
@@ -220,32 +224,53 @@ void GameScene::updateClimbingState(MovingCharacter& entity)
 		entity.setYState(YState::Falling);
 }
 
-void GameScene::addEntity(const std::string& name, const sf::Vector2f& position)
+void GameScene::loadEntities(const std::string& entitiesFilename)
 {
-	if (name == "player")
+	std::ifstream stream(entitiesFilename);
+	if (stream)
 	{
-		// Allocation
-		assert(!m_player);	// m_player should be initialized once per map loading
-		m_player = new Player();
-		m_entities.push_front(m_player);
+		auto registerEntity = [&](const std::string& entityType, float x, float y)
+		{
+			if (entityType == "player")
+			{
+				// Allocation
+				assert(!m_player);	// m_player should be initialized once per level loading
+				m_player = new Player();
+				m_entities.push_front(m_player);
 
-		m_player->setPosition(position.x, position.y);
-		m_player->setTexture(m_tileset);
-		m_layers["playerLayer"].addObject(m_player);
-	}
-	else if (name == "enemy")
-	{
-		// Allocation
-		Enemy* enemy = new Enemy();
-		m_enemies.push_back(enemy);
-		m_entities.push_back(enemy);
+				m_player->setPosition(x, y);
+				m_player->setTexture(m_tileset);
+				m_layers["playerLayer"].addObject(m_player);
+			}
+			else if (entityType == "enemy")
+			{
+				// Allocation
+				Enemy* enemy = new Enemy();
+				m_enemies.push_back(enemy);
+				m_entities.push_back(enemy);
 
-		enemy->setTexture(m_tileset);
-		enemy->setPosition(position.x, position.y);
-		m_layers["mobsLayer"].addObject(enemy);
+				enemy->setTexture(m_tileset);
+				enemy->setPosition(x, y);
+				m_layers["mobsLayer"].addObject(enemy);
+			}
+			else
+				std::cerr << "!!! Calling loadEntities with name type=" << entityType << "!!!" << std::endl;
+		};
+
+		nlohmann::json data;
+		stream >> data;
+
+		// Loading the player
+		registerEntity("player", data["player"][0], data["player"][1]);
+
+		// Loading the entities
+		for (const auto& enemy : data["enemies"])
+			registerEntity("enemy", enemy[0], enemy[1]);
 	}
 	else
-		std::cerr << "!!! Calling placeEntity with name=" << name << "!!!" << std::endl;
+	{
+		std::cerr << "Failed to open: " << entitiesFilename << std::endl;
+	}
 }
 
 void GameScene::moveEntity(MovingCharacter& entity, bool* xCollision)
